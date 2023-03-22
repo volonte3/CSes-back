@@ -15,7 +15,7 @@ build:
     - deployer build
   # TODO Start: [Student] Set as only master
   only:
-    - master
+    - deploy_test
   # TODO End: [Student] Set as only master
 
 unit-test:
@@ -29,7 +29,7 @@ unit-test:
     # TODO End: [Student] Install dependencies
   script:
     # TODO Start: [Student] Migrate and run tests
-    - python3 manage.py makemigrations board
+    - python3 manage.py makemigrations 
     - python3 manage.py migrate
     - sh ./test.sh
     # TODO End: [Student] Migrate and run tests
@@ -38,7 +38,8 @@ unit-test:
     - curl "http://api.secoder.net/static/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
     - tar -xf "/tmp/sonar-$SUFFIX.tar.gz"  -C /opt
     - /opt/sonar-scanner/bin/sonar-scanner
-
+  only:
+    - deploy_test
 deploy:
   stage: deploy
   script:
@@ -46,5 +47,5 @@ deploy:
     - deployer dyno replace backend $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG gitlab-ci-token $REGISTRY_PWD
   # TODO Start: [Student] Set as only master
   only:
-    - master
+    - deploy_test
   # TODO End: [Student] Set as only master
