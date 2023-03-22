@@ -13,26 +13,26 @@ build:
     - export BUILD_IMAGE_USERNAME=$CI_REGISTRY_USER
     - export BUILD_IMAGE_PASSWORD=$CI_REGISTRY_PASSWORD
     - deployer build
-  # TODO Start: [Student] Set as only master
+
   only:
     - deploy_test
-  # TODO End: [Student] Set as only master
+
 
 unit-test:
-  # TODO Start: [Student] Set job image
+
   image: python:3.9
-  # TODO End: [Student] Set job image
+
   stage: test
   before_script:
-    # TODO Start: [Student] Install dependencies
+
     - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
-    # TODO End: [Student] Install dependencies
+
   script:
-    # TODO Start: [Student] Migrate and run tests
+
     - python3 manage.py makemigrations 
     - python3 manage.py migrate
     - sh ./test.sh
-    # TODO End: [Student] Migrate and run tests
+
   after_script:
     - SUFFIX=$RANDOM
     - curl "http://api.secoder.net/static/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
@@ -43,9 +43,7 @@ unit-test:
 deploy:
   stage: deploy
   script:
-    - export DEPLOY_ENV=$GITLAB_USER_LOGIN
-    - deployer dyno replace backend $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG gitlab-ci-token $REGISTRY_PWD
-  # TODO Start: [Student] Set as only master
+    - deployer dyno replace $CI_PROJECT_NAME "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" "$REGISTRY_USER" "$REGISTRY_PWD"
   only:
     - deploy_test
-  # TODO End: [Student] Set as only master
+    

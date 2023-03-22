@@ -1,5 +1,5 @@
 #!/bin/sh
-python3 manage.py makemigrations board
+python3 manage.py makemigrations 
 python3 manage.py migrate
 
 # TODO Start: [Student] Run with uWSGI instead
