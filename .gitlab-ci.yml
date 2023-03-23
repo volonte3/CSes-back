@@ -40,10 +40,10 @@ unit-test:
     - /opt/sonar-scanner/bin/sonar-scanner
   only:
     - deploy_test
+    
 deploy:
   stage: deploy
   script:
     - deployer dyno replace $CI_PROJECT_NAME "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" "$REGISTRY_USER" "$REGISTRY_PWD"
   only:
     - deploy_test
-    
