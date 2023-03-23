@@ -4,6 +4,6 @@ from Asset.models import AssetClass, Asset, PendingRequests
 class UserTests(TestCase):
     def setUp(self):
         pass
-    def ASSERT():
-        assert 1 == 1
+    def test_assert_test(self):
+        self.assertEqual(1, 1)
 # Create your tests here.
