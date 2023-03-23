@@ -44,6 +44,7 @@ unit-test:
 deploy:
   stage: deploy
   script:
+    - export DEPLOY_ENV=$GITLAB_USER_LOGIN
     - deployer dyno replace $CI_PROJECT_NAME $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG gitlab-ci-token $REGISTRY_PWD
   only:
     - deploy_test
