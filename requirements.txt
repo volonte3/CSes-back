@@ -1,8 +1,8 @@
 django==4.1.3
 
 django-cors-headers
-# pymysql
-# mysqlclient==2.1.0
+pymysql
+mysqlclient==2.1.0
 
 pytest
 pytest-django
