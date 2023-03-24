@@ -84,7 +84,8 @@ DATABASES = {
         "PORT": 3306,
         "USER": "CSes", 
         "PASSWORD": "20011101",
-        "default-character-set" : "utf8mb4"     
+        "NAME": "CS_company",
+        "OPTIONS": {"charset": "utf8mb4"}   
     }
 }
 
