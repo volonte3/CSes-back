@@ -1,5 +1,5 @@
-
 from django.db import models
+import utils.model_date as getTime
 
 # 本条用于记录业务实体的信息
 class Entity(models.Model):
@@ -32,7 +32,14 @@ class User(models.Model):
     def __str__(self):
         return self.name
 
+# honorcode: from https://github.com/c7w/ReqMan-backend/blob/dev/ums/models.py
+class SessionPool(models.Model):
+    sessionId = models.CharField(max_length=32)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    expireAt = models.DateTimeField(default=getTime.get_datetime)
 
+    class Mata:
+        indexes = [models.Index(fields=["sessionId"])]
 
 
 

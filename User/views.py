@@ -6,6 +6,7 @@ from Asset.models import AssetClass, Asset, PendingRequests
 from utils.utils_request import BAD_METHOD, request_failed, request_success, return_field
 from utils.utils_require import MAX_CHAR_LENGTH, CheckRequire, require
 from utils.utils_time import get_timestamp
+from utils.sessions import *
 
 
 @CheckRequire
@@ -35,6 +36,7 @@ def login(req: HttpRequest):
             return request_failed(2, {"无效的用户名"})
         else:
             if user.password == hashed_password:
+                # bind_session_id(req.auth["sessionId"], user)
                 return request_success({"登录成功，欢迎来到资产管理系统"})
             else:
                 return request_failed(2, {"密码错误"})
