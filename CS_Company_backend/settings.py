@@ -80,9 +80,11 @@ WSGI_APPLICATION = "CS_Company_backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "OPTIONS": {
-            "read_default_file": "my.cnf"
-        },
+        "HOST": "CS-Company-database.CSes.secoder.local",                 
+        "PORT": 3306,
+        "USER": "CSes", 
+        "PASSWORD": "20011101",
+        "default-character-set" : "utf8mb4"     
     }
 }
 
