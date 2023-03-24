@@ -77,18 +77,25 @@ WSGI_APPLICATION = "CS_Company_backend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "HOST": "CS-Company-database.CSes.secoder.local",                 
-        "PORT": 3306,
-        "USER": "CSes", 
-        "PASSWORD": "20011101",
-        "NAME": "CS_company",
-        "OPTIONS": {"charset": "utf8mb4"}   
+if os.getenv("DEPLOY"): 
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "HOST": "CS-Company-database.CSes.secoder.local",                 
+            "PORT": 3306,
+            "USER": "CSes", 
+            "PASSWORD": "20011101",
+            "NAME": "CS_company",
+            "OPTIONS": {"charset": "utf8mb4"}   
+        }
     }
-}
-
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
