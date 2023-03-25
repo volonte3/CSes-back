@@ -45,7 +45,5 @@ deploy:
   stage: deploy
   script:
     - deployer dyno replace $CI_PROJECT_NAME $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG gitlab-ci-token $REGISTRY_PWD
-  after_script:
-    - sh ./start.sh
   only:
     - deploy_test
