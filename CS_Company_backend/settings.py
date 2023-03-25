@@ -83,8 +83,8 @@ if os.getenv("DEPLOY"):
             "ENGINE": "django.db.backends.mysql",
             "HOST": "CS-Company-database.CSes.secoder.local",                 
             "PORT": 3306,
-            "USER": "root", 
-            "PASSWORD": "20030312",
+            "USER": "CSes", 
+            "PASSWORD": "20011101",
             "NAME": "CS_company",
             "OPTIONS": {"charset": "utf8mb4"}   
         }
