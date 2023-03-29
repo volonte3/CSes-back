@@ -11,3 +11,6 @@ coverage
 # TODO Start: [Student] Add dependency on uWSGI
 uwsgi
 # TODO End: [Student] Add dependency on uWSGI
+
+pytz
+djangorestframework
