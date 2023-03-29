@@ -15,7 +15,8 @@ build:
     - deployer build
 
   only:
-    - deploy_test
+    - master
+    - dev
 
 
 unit-test:
@@ -38,12 +39,12 @@ unit-test:
     - curl "http://api.secoder.net/static/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
     - tar -xf "/tmp/sonar-$SUFFIX.tar.gz"  -C /opt
     - /opt/sonar-scanner/bin/sonar-scanner
-  only:
-    - deploy_test
+
     
 deploy:
   stage: deploy
   script:
     - deployer dyno replace $CI_PROJECT_NAME $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG gitlab-ci-token $REGISTRY_PWD
   only:
-    - deploy_test
+    - master
+    - dev
