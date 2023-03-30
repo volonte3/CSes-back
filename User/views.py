@@ -58,3 +58,5 @@ def logout(req: Request):
         session_id = get_session_id(req)
         disable_session_id(sessionId=session_id)
         return request_success()
+    else:
+        return BAD_METHOD

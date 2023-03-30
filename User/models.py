@@ -26,8 +26,9 @@ class User(models.Model):
     password = models.CharField(max_length = 32)
     entity = models.ForeignKey(to = Entity, on_delete = models.CASCADE)
     department = models.ForeignKey(to = Department, on_delete = models.CASCADE)
-    entity_super = models.IntegerField()   # 用户是否为业务实体的系统管理员
-    system_super = models.IntegerField()   # 用户是否为系统的超级管理员
+    super_administraor = models.IntegerField()    # 用户是否为超级管理员
+    system_administrator = models.IntegerField()  # 用户是否为系统管理员
+    asset_administrator = models.IntegerField(default=1)   # 用户是否为资产管理员
 
     def __str__(self):
         return self.name
