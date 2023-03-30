@@ -38,7 +38,7 @@ def login(req: Request):
         name, hashed_password = check_for_user_data(body)
 
         # 再进行sha256加密
-        hashed_password = sha256(hashed_password)
+        sha_hashed_password = sha256(hashed_password)
 
         user = User.objects.filter(name=name).first()
         if not user:
@@ -46,8 +46,8 @@ def login(req: Request):
         else:
             print("__", user.name)
             print("__", user.password)
-            print("__", hashed_password)
-            if user.password == hashed_password:
+            print("__", sha_hashed_password)
+            if user.password == sha_hashed_password:
                 session_id = get_session_id(req)
                 bind_session_id(sessionId=session_id, user=user)
                 print("successfully bind session id!")
