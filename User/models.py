@@ -28,7 +28,7 @@ class User(models.Model):
     department = models.ForeignKey(to = Department, on_delete = models.CASCADE)
     super_administraor = models.IntegerField()    # 用户是否为超级管理员
     system_administrator = models.IntegerField()  # 用户是否为系统管理员
-    asset_administrator = models.IntegerField(default=1)   # 用户是否为资产管理员
+    asset_administrator = models.IntegerField()   # 用户是否为资产管理员
 
     def __str__(self):
         return self.name

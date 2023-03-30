@@ -30,17 +30,17 @@ class UserTests(TestCase):
         self.u1 = User.objects.create(
             name = 'chusheng_1',password = 'yiqunchusheng',
             entity = self.e1,department= self.d1,
-            entity_super = 0,system_super = 1
+            super_administrator = 0,system_administrator = 1, asset_administrator=0
         )
         self.u2 = User.objects.create(
             name="chusheng_2", password="yiqunchusheng",
             entity = self.e1,department= self.d1,
-            entity_super = 1,system_super = 0
+            super_administrator = 1,system_administrator = 0, asset_administrator=0
         )
         self.u3 = User.objects.create(
             name="chusheng_3", password="yiqunchusheng",
             entity = self.e1,department= self.d1,
-            entity_super = 0,system_super = 0
+            super_administrator = 0,system_administrator = 0, asset_administrator=0
         )
         SessionPool.objects.create(user = self.u1)
     
