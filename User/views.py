@@ -44,6 +44,9 @@ def login(req: Request):
         if not user:
             return request_failed(2, "用户名或密码错误")
         else:
+            print("__", user.name)
+            print("__", user.password)
+            print("__", hashed_password)
             if user.password == hashed_password:
                 session_id = get_session_id(req)
                 bind_session_id(sessionId=session_id, user=user)

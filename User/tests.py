@@ -3,6 +3,7 @@ from User.models import *
 from django.test import Client as DefaultClient
 from User.views import *
 import json
+from utils.utils_other import *
 
 
 class Client(DefaultClient):
@@ -25,20 +26,21 @@ class Client(DefaultClient):
 
 class UserTests(TestCase):
     def setUp(self):
+        self.raw_password = "yiqunchusheng"
         self.e1 = Entity.objects.create(name = 'CS_Company')
         self.d1 = Department.objects.create(name = 'depart1',entity = self.e1)
         self.u1 = User.objects.create(
-            name = 'chusheng_1',password = 'yiqunchusheng',
+            name = 'chusheng_1',password = sha256(self.raw_password),
             entity = self.e1,department= self.d1,
             super_administrator = 0,system_administrator = 1, asset_administrator=0
         )
         self.u2 = User.objects.create(
-            name="chusheng_2", password="yiqunchusheng",
+            name="chusheng_2", password=sha256(self.raw_password),
             entity = self.e1,department= self.d1,
             super_administrator = 1,system_administrator = 0, asset_administrator=0
         )
         self.u3 = User.objects.create(
-            name="chusheng_3", password="yiqunchusheng",
+            name="chusheng_3", password=sha256(self.raw_password),
             entity = self.e1,department= self.d1,
             super_administrator = 0,system_administrator = 0, asset_administrator=0
         )
@@ -49,7 +51,7 @@ class UserTests(TestCase):
         c.cookies["SessionID"] = "0"
         resp = c.post(
             "/User/login",
-            data={"UserName": self.u1.name +'hahaha', "Password": self.u1.password},
+            data={"UserName": self.u1.name +'hahaha', "Password": self.raw_password},
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"], 2)
@@ -59,7 +61,7 @@ class UserTests(TestCase):
         c.cookies["SessionID"] = "0"
         resp = c.post(
             "/User/login",
-            data={"UserName": self.u1.name, "Password": self.u1.password + 'hahaha'},
+            data={"UserName": self.u1.name, "Password": self.raw_password + 'hahaha'},
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"], 3)
@@ -69,7 +71,7 @@ class UserTests(TestCase):
         c.cookies["SessionID"] = "0"
         resp = c.post(
             "/User/login",
-            data={"UserName": self.u1.name, "Password": self.u1.password},
+            data={"UserName": self.u1.name, "Password": self.raw_password},
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"], 0)
