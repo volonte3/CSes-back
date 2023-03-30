@@ -62,6 +62,6 @@ deploy_master:
 deploy_dev:
   stage: deploy
   script:
-    - deployer dyno replace backend_dev $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG gitlab-ci-token $REGISTRY_PWD
+    - deployer dyno replace CS-Company-backend-dev $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG gitlab-ci-token $REGISTRY_PWD
   only:
     - dev
