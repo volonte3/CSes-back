@@ -23,7 +23,7 @@ class Department(models.Model):
 class User(models.Model):
     id = models.BigAutoField(primary_key = True)
     name = models.CharField(max_length = 128, unique = True)
-    password = models.CharField(max_length = 32)
+    password = models.CharField(max_length=100)
     entity = models.ForeignKey(to = Entity, on_delete = models.CASCADE)
     department = models.ForeignKey(to = Department, on_delete = models.CASCADE)
     super_administrator = models.IntegerField()    # 用户是否为超级管理员

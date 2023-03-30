@@ -35,6 +35,8 @@ def login(req: Request):
         
         name, hashed_password = check_for_user_data(body)
 
+        # 再对
+
         user = User.objects.filter(name=name).first()
         if not user:
             return request_failed(2, "用户名或密码错误")
