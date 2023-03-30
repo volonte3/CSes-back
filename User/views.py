@@ -8,6 +8,8 @@ from utils.utils_require import MAX_CHAR_LENGTH, CheckRequire, require
 from utils.sessions import *
 from utils.manipulate_database import *
 from rest_framework.request import Request
+from utils.utils_other import *
+
 
 def check_for_user_data(body):
     name = require(body, "UserName", "string",
@@ -35,7 +37,8 @@ def login(req: Request):
         
         name, hashed_password = check_for_user_data(body)
 
-        # 再对
+        # 再进行sha256加密
+        hashed_password = sha256(hashed_password)
 
         user = User.objects.filter(name=name).first()
         if not user:
