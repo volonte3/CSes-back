@@ -57,11 +57,4 @@ deploy_master:
     - deployer dyno replace $CI_PROJECT_NAME $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG gitlab-ci-token $REGISTRY_PWD
   only:
     - master
-
-
-deploy_dev:
-  stage: deploy
-  script:
-    - deployer dyno replace CS-Company-backend-dev $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG gitlab-ci-token $REGISTRY_PWD
-  only:
     - dev
