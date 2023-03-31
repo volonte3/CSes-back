@@ -68,3 +68,22 @@ def logout(req: Request):
         return request_success()
     else:
         return BAD_METHOD
+
+def user_info(req: Request):
+    if req.method == 'GET':
+        # 获取session_id
+        session_id = get_session_id(req)
+        
+        sessionRecord =SessionPool.objects.filter(sessionId=sessionId).first()
+        if sessionRecord:
+            if sessionRecord.expireAt < dt.datetime.now(pytz.timezone(TIME_ZONE)):
+                SessionPool.objects.filter(sessionId=sessionId).delete()
+                return None
+            return sessionRecord.user
+        else:
+            return None
+
+    else:
+        return BAD_METHOD
+    
+
