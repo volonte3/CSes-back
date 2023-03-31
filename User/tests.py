@@ -48,44 +48,45 @@ class UserTests(TestCase):
     
     def test_login1(self):
         c = Client()
-        c.cookies["SessionID"] = "0"
+        # c.cookies["SessionID"] = "0"
         resp = c.post(
             "/User/login",
-            data={"UserName": self.u1.name +'hahaha', "Password": self.raw_password},
+            data={"UserName": self.u1.name +'hahaha', "Password": self.raw_password, "SessionID": "0"},
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"], 2)
 
     def test_login2(self):
         c = Client()
-        c.cookies["SessionID"] = "0"
+        # c.cookies["SessionID"] = "0"
         resp = c.post(
             "/User/login",
-            data={"UserName": self.u1.name, "Password": self.raw_password + 'hahaha'},
+            data={"UserName": self.u1.name, "Password": self.raw_password + 'hahaha', "SessionID": "0"},
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"], 3)
         
     def test_login3(self):
         c = Client()
-        c.cookies["SessionID"] = "0"
+        # c.cookies["SessionID"] = "0"
         resp = c.post(
             "/User/login",
-            data={"UserName": self.u1.name, "Password": self.raw_password},
+            data={"UserName": self.u1.name, "Password": self.raw_password, "SessionID": "0"},
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"], 0)
     
     def test_logout(self):
         c = Client()
-        c.cookies["SessionID"] = "0"
+        # c.cookies["SessionID"] = "0"
         c.post(
             "/User/login",
-            data={"UserName": self.u1.name, "Password": self.u1.password},
+            data={"UserName": self.u1.name, "Password": self.u1.password, "SessionID": "0"},
             content_type="application/json",
         )
         resp = c.post(
             "/User/logout",
+            data={"SessionID": "0"},
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"], 0)

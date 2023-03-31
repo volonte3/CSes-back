@@ -7,11 +7,20 @@ import random
 import string
 from django.http import HttpRequest, HttpResponse
 from rest_framework.request import Request
+import json
+from utils.utils_require import MAX_CHAR_LENGTH, CheckRequire, require
 
 def get_session_id(request: Request):
-    if request.method == "POST":
-        session_id = request["SessionID"]  
-        return session_id
+    # if request.method == "POST":
+    tmp_body = request.body.decode("utf-8")
+    try:
+        body = json.loads(tmp_body) 
+    except BaseException as error:
+        print(error, tmp_body)
+    # print(body)
+    SessionID = require(body, "SessionID", "string",
+                   err_msg="Missing or error type of SessionID")
+    return SessionID
 
 # def set_session_id(response):
 #     sessionId = "".join(random.sample(string.ascii_letters + string.digits, 32))
