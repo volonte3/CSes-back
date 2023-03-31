@@ -7,6 +7,7 @@ class AssetClass(models.Model):
     id = models.BigAutoField(primary_key = True)  # 资产类别的 id 
     name = models.CharField(max_length = 128)     # 资产类别, 如"房地产"
     
+    
     def __str__(self):
         return self.name
 

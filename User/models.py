@@ -26,9 +26,10 @@ class User(models.Model):
     password = models.CharField(max_length=100)
     entity = models.ForeignKey(to = Entity, on_delete = models.CASCADE)
     department = models.ForeignKey(to = Department, on_delete = models.CASCADE)
-    super_administrator = models.IntegerField()    # 用户是否为超级管理员
+    super_administrator = models.IntegerField()   # 用户是否为超级管理员
     system_administrator = models.IntegerField()  # 用户是否为系统管理员
     asset_administrator = models.IntegerField()   # 用户是否为资产管理员
+    function_string = models.CharField(max_length=50)          # 代表该用户的权能01字符串
 
     def __str__(self):
         return self.name
