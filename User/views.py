@@ -91,9 +91,8 @@ def user_info(req: Request):
                     usr_info["Authority"] = 2
                 else:
                     usr_info["Authority"] = 3
-                
-                
-
+                usr_info["01_string"] = usr.function_string
+                return request_success(data=user_info)
         else:
             return request_failed(1, "session id doesn't exist")
 
