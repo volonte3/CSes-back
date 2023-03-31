@@ -5,7 +5,7 @@ stages:
   - test
   - deploy
 
-build:
+build_master:
   stage: build
   script:
     - export BUILD_IMAGE_NAME=$CI_REGISTRY_IMAGE
@@ -16,8 +16,18 @@ build:
 
   only:
     - master
-    - dev
 
+build_others:
+  stage: build
+  script:
+    - export BUILD_IMAGE_NAME=$CI_REGISTRY_IMAGE
+    - export BUILD_IMAGE_TAG=$CI_COMMIT_REF_SLUG
+    - export BUILD_IMAGE_USERNAME=$CI_REGISTRY_USER
+    - export BUILD_IMAGE_PASSWORD=$CI_REGISTRY_PASSWORD
+    - deployer build
+
+  except:
+    - master
 
 unit-test:
 
@@ -39,12 +49,19 @@ unit-test:
     - curl "http://api.secoder.net/static/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
     - tar -xf "/tmp/sonar-$SUFFIX.tar.gz"  -C /opt
     - /opt/sonar-scanner/bin/sonar-scanner
- 
+
     
-deploy:
+deploy_master:
   stage: deploy
   script:
     - deployer dyno replace $CI_PROJECT_NAME $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG gitlab-ci-token $REGISTRY_PWD
   only:
     - master
+
+
+deploy_dev:
+  stage: deploy
+  script:
+    - deployer dyno replace CS-Company-backend-dev $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG gitlab-ci-token $REGISTRY_PWD
+  only:
     - dev
