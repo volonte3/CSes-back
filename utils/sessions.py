@@ -10,7 +10,7 @@ from rest_framework.request import Request
 
 def get_session_id(request: Request):
     if request.method == "POST":
-        session_id = request.COOKIES["SessionID"]  
+        session_id = request["SessionID"]  
         return session_id
 
 # def set_session_id(response):

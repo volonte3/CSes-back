@@ -71,17 +71,31 @@ def logout(req: Request):
 
 def user_info(req: Request):
     if req.method == 'GET':
-        # 获取session_id
-        session_id = get_session_id(req)
-        
+        # 获取session id
+        sessionId = get_session_id(req)
+
         sessionRecord =SessionPool.objects.filter(sessionId=sessionId).first()
         if sessionRecord:
             if sessionRecord.expireAt < dt.datetime.now(pytz.timezone(TIME_ZONE)):
                 SessionPool.objects.filter(sessionId=sessionId).delete()
-                return None
-            return sessionRecord.user
+                return request_failed(2, "session id expire")
+            else:
+                usr = sessionRecord.user
+                usr_info = {}
+                usr_info["UserName"] = usr.name
+                if usr.super_administrator == 1:
+                    usr_info["Authority"] = 0
+                elif usr.system_administrator == 1:
+                    usr_info["Authority"] = 1
+                elif usr.asset_administrator == 1:
+                    usr_info["Authority"] = 2
+                else:
+                    usr_info["Authority"] = 3
+                
+                
+
         else:
-            return None
+            return request_failed(1, "session id doesn't exist")
 
     else:
         return BAD_METHOD
