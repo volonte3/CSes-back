@@ -8,6 +8,8 @@ from utils.utils_require import MAX_CHAR_LENGTH, CheckRequire, require
 from utils.sessions import *
 from utils.manipulate_database import *
 from rest_framework.request import Request
+from utils.utils_other import *
+
 
 def check_for_user_data(body):
     name = require(body, "UserName", "string",
@@ -35,11 +37,17 @@ def login(req: Request):
         
         name, hashed_password = check_for_user_data(body)
 
+        # 再进行sha256加密
+        sha_hashed_password = sha256(hashed_password)
+
         user = User.objects.filter(name=name).first()
         if not user:
             return request_failed(2, "用户名或密码错误")
         else:
-            if user.password == hashed_password:
+            print("__", user.name)
+            print("__", user.password)
+            print("__", sha_hashed_password)
+            if user.password == sha_hashed_password:
                 session_id = get_session_id(req)
                 bind_session_id(sessionId=session_id, user=user)
                 print("successfully bind session id!")
@@ -58,3 +66,5 @@ def logout(req: Request):
         session_id = get_session_id(req)
         disable_session_id(sessionId=session_id)
         return request_success()
+    else:
+        return BAD_METHOD
