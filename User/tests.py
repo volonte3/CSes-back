@@ -89,4 +89,4 @@ class UserTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"], 0)
-
+        
