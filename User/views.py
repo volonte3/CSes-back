@@ -69,10 +69,11 @@ def logout(req: Request):
     else:
         return BAD_METHOD
 
-def user_info(req: Request):
+def user_info(req: Request, sessionId:str):
+    print("调用了user_info函数", sessionId)
     if req.method == 'GET':
         # 获取session id
-        sessionId = get_session_id(req)
+        # sessionId = get_session_id(req)
 
         sessionRecord =SessionPool.objects.filter(sessionId=sessionId).first()
         if sessionRecord:
@@ -92,7 +93,7 @@ def user_info(req: Request):
                 else:
                     usr_info["Authority"] = 3
                 usr_info["01_string"] = usr.function_string
-                return request_success(data=user_info)
+                return request_success(usr_info)
         else:
             return request_failed(1, "session id doesn't exist")
 
