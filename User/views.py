@@ -62,10 +62,13 @@ def logout(req: Request):
     # TODO
     # 验证是否存在user
     if req.method == 'POST':
-
         session_id = get_session_id(req)
-        disable_session_id(sessionId=session_id)
-        return request_success()
+        sessionRecord =SessionPool.objects.filter(sessionId=session_id).first()
+        if sessionRecord:
+            disable_session_id(sessionId=session_id)
+            return request_success()
+        else:
+            return request_failed(1, "session id doesn't exist")
     else:
         return BAD_METHOD
 
