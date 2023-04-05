@@ -12,8 +12,9 @@ class AssetClass(models.Model):
     property = models.IntegerField()  # 资产类别属性 
     # 0: 根节点，不出现在前端展示中
     # 1: 非根节点, 非品类
-    # 2: 条目型资产品类
-    # 3: 数量型资产品类
+    # 2: 尚未被定义为条目型资产还是数量型资产的品类
+    # 3: 条目型资产品类
+    # 4: 数量型资产品类
     
     def __str__(self):
         return self.name

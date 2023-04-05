@@ -6,7 +6,7 @@ from Asset.models import AssetClass, Asset, PendingRequests
 from utils.utils_request import BAD_METHOD, request_failed, request_success, return_field
 from utils.utils_require import MAX_CHAR_LENGTH, CheckRequire, require
 from utils.sessions import *
-from utils.manipulate_database import *
+# from utils.manipulate_database import *
 from rest_framework.request import Request
 from utils.utils_other import *
 

@@ -1,5 +1,7 @@
 from Asset.models import AssetClass, Asset
 
+# 可以多写一个鉴定用户是不是资产管理、有没有权限修改的函数
+
 def get_asset(asset_class_id):
     asset_class = AssetClass.objects.filter(id=asset_class_id).first()
     assert(asset_class != None, "Asset Class NOT Found!")

@@ -52,13 +52,40 @@ class AssetTests(TestCase):
         # SessionPool.objects.create(user = self.u1)
         
         # 创建资产分类asset class简称ac
-        # self.ac0 = AssetClass.objects.create(
-        #     department = 1, 
-        # )
-        # self.ac1 = AssetClass.objects.create(
-        #     department = 1, name = "房屋与构筑物", 
-        # )
+        self.ac0 = AssetClass.objects.create(
+            department = self.d1, name = "department1根节点", children = "$2$3",  property = 0
+        )
+        self.ac1 = AssetClass.objects.create(
+            department = self.d1, name = "房屋与构筑物", parent = self.ac0, children = "$4$5", property = 1
+        )
+        self.ac2 = AssetClass.objects.create(
+            department = self.d1, name = "设备", parent = self.ac0, children = "$6$7", property = 1
+        )
+        self.ac3 = AssetClass.objects.create(
+            department = self.d1, name = "房屋", parent = self.ac1, children = "", property = 2
+        )
+        self.ac4 = AssetClass.objects.create(
+            department = self.d1, name = "土地", parent = self.ac1, children = "", property = 2
+        )
+        self.ac5 = AssetClass.objects.create(
+            department = self.d1, name = "信息化设备", parent = self.ac2, children = "", property = 2
+        )
+        self.ac6 = AssetClass.objects.create(
+            department = self.d1, name = "车辆", parent = self.ac2, children = "", property = 2
+        )
         
-    def test_assert_test(self):
-        self.assertEqual(1, 1)
+    def test_tree1(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u1.name, "Password": self.raw_password, "SessionID": "1"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/Asset/tree",
+            data={"SessionID": "1"},
+            content_type="application/json",
+        )
+
+        self.assertEqual(resp.json()["code"], 0)
 # Create your tests here.
