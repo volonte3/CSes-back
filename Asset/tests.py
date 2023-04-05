@@ -86,6 +86,8 @@ class AssetTests(TestCase):
             data={"SessionID": "1"},
             content_type="application/json",
         )
-
+        print("-------------")
+        print(resp.json()["treeData"])
+        print("-------------")
         self.assertEqual(resp.json()["code"], 0)
 # Create your tests here.

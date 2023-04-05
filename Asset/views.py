@@ -7,6 +7,7 @@ from utils.utils_request import BAD_METHOD, request_failed, request_success, ret
 import pytz
 import datetime as dt
 from CS_Company_backend.settings import TIME_ZONE
+from utils.utils_asset import parse_children, give_subtree_recursive
 
 def add_asset_class():
     pass
@@ -16,11 +17,6 @@ def add_asset_class():
 
 
 
-
-
-
-
-    
 
 def give_tree(req: Request):
 
@@ -37,8 +33,18 @@ def give_tree(req: Request):
             return request_failed(2, "session id expire")
         else:
             usr = sessionRecord.user
-            
-            return request_success({"data":usr.name})
+
+            # 根据这个usr的department_id来给出这个department的资产分类树
+            treeData = []
+
+            # 找到这个department的根节点
+            rootNode = AssetClass.objects.filter(department = usr.department, property = 0).first()
+            # 遍历这个根节点的孩子节点
+            children_list = parse_children(rootNode.children)
+            for child_id in children_list:
+                treeData.append(give_subtree_recursive(child_id, usr.department.id))
+  
+            return request_success({"treeData":treeData})
     else:
         return request_failed(1, "session id doesn't exist")
 
@@ -68,8 +74,8 @@ def give_tree(req: Request):
     #     },
     # ];
     
-    # 先从数据库中选出该deperment_id的根节点root
 
-    treeData = []
+
+    
 
     
