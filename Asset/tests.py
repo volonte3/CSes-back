@@ -22,6 +22,7 @@ class Client(DefaultClient):
         return super(Client, self).get(*args, **self._add_cookie(kw))
 
 
+
 class AssetTests(TestCase):
     def setUp(self):
         self.raw_password = "yiqunchusheng"
