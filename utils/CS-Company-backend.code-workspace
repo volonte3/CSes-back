@@ -5,9 +5,6 @@
 		},
 		{
 			"path": "../../helper"
-		},
-		{
-			"path": "../../../ComputerGraphic/PA1"
 		}
 	],
 	"settings": {}
