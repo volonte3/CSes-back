@@ -36,9 +36,9 @@ class User(models.Model):
 
 # honorcode: from https://github.com/c7w/ReqMan-backend/blob/dev/ums/models.py
 class SessionPool(models.Model):
-    sessionId = models.CharField(max_length=48) # 实际长度: 空格（%20）+32
+    sessionId = models.CharField(max_length=48) # 实际长度: 32
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    expireAt = models.DateTimeField(default=getTime.get_datetime)
+    expireAt = models.DateTimeField(default=getTime.get_datetime) # TODO:搞清楚这里的get_datetime
 
     class Mata:
         indexes = [models.Index(fields=["sessionId"])]

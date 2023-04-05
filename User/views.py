@@ -61,6 +61,7 @@ def logout(req: Request):
     
     # TODO
     # 验证是否存在user
+    
     if req.method == 'POST':
 
         session_id = get_session_id(req)
