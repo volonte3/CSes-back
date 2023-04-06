@@ -3,7 +3,7 @@ from User.models import Department
 
 
 def add_asset_class_1():
-    d1 = Department.objects.filter(id = 1)
+    d1 = Department.objects.filter(id = 1).first()
     ac0 = AssetClass.objects.create(
         department = d1, name = d1.name + " 资产分类树", children = "$2$3",  property = 0
     )
