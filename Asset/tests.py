@@ -53,7 +53,7 @@ class AssetTests(TestCase):
         
         # 创建资产分类asset class简称ac
         self.ac0 = AssetClass.objects.create(
-            department = self.d1, name = "department1根节点", children = "$2$3",  property = 0
+            department = self.d1, name = "department1 资产分类树", children = "$2$3",  property = 0
         )
         self.ac1 = AssetClass.objects.create(
             department = self.d1, name = "房屋与构筑物", parent = self.ac0, children = "$4$5", property = 1

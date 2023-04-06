@@ -9,8 +9,8 @@ from utils.utils_add_data import add_asset_class_1
 
 def add_data(req: Request):
     # add_asset_class_1()
-    ac0 = AssetClass.objects.filter(id = 1).first()
-    return HttpResponse(ac0.name + "Congratulations! You have successfully added many data. Go ahead!")
+    # ac0 = AssetClass.objects.filter(id = 1).first()
+    return HttpResponse("Congratulations! You have successfully added many data. Go ahead!")
 
 def _add_asset_class(usr:User, data):
 
@@ -33,14 +33,21 @@ def add_asset_class(req: Request):
 
 def _give_tree(usr, data=None):
     # 根据这个usr的department_id来给出这个department的资产分类树
-    treeData = []
+    
 
     # 找到这个department的根节点
     rootNode = AssetClass.objects.filter(department = usr.department, property = 0).first()
+
+    treeData = {}
+    treeData['title'] = rootNode.name
+    treeData['value'] = rootNode.id
+
+    children = []
     # 遍历这个根节点的孩子节点
     children_list = parse_children(rootNode.children)
     for child_id in children_list:
-        treeData.append(give_subtree_recursive(child_id, usr.department.id))
+        children.append(give_subtree_recursive(child_id, usr.department.id))
+    treeData['children'] = children
 
     return request_success({"treeData":treeData})
 
