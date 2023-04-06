@@ -11,3 +11,8 @@ def sha256(password: str):
     # 获取哈希值
     hashed_password = hash_object.hexdigest()
     return hashed_password
+
+def parse_children(children_string):
+    # 这里要不要增加children_string==None的一个判断
+    children_list = children_string.split('$')
+    return children_list[1:]  # 去除最前面的一个空格
