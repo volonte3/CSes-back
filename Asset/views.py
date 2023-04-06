@@ -8,8 +8,9 @@ from django.http import HttpResponse
 from utils.utils_add_data import add_asset_class_1
 
 def add_data(req: Request):
-    add_asset_class_1()
-    return HttpResponse("Congratulations! You have successfully added many data. Go ahead!")
+    # add_asset_class_1()
+    ac0 = AssetClass.objects.filter(id = 1).first()
+    return HttpResponse(ac0.name + "Congratulations! You have successfully added many data. Go ahead!")
 
 def _add_asset_class(usr:User, data):
 
