@@ -11,13 +11,13 @@ import json
 from utils.utils_require import MAX_CHAR_LENGTH, CheckRequire, require
 
 def get_session_id(request: Request):
-    if request.method == "POST":
+    if (request.method == "POST") or (request.method == "PUT"):
         tmp_body = request.body.decode("utf-8")
         
         try:
             body = json.loads(tmp_body) 
         except BaseException as error:
-            print("wrong", error, tmp_body)
+            print("During get_session_id: ", error, tmp_body)
         # print(body)
         SessionID = require(body, "SessionID", "string",
                     err_msg="Missing or error type of SessionID")

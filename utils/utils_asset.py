@@ -1,24 +1,44 @@
 from Asset.models import AssetClass
-from User.models import Department
+from User.models import Department,User
 from User.models import SessionPool
 from rest_framework.request import Request
 from utils.sessions import get_session_id
 from utils.utils_other import *
-from utils.utils_request import BAD_METHOD, request_failed
+from utils.config import *
+from utils.utils_request import *
+import json
 import pytz
 import datetime as dt
 from CS_Company_backend.settings import TIME_ZONE
 
-# 可以多写一个鉴定用户是不是资产管理、有没有权限修改的函数
-def check_authority(authority_level):
+# 鉴权函数
+def check_authority(authority_level, usr:User):
     # TODO 
-    # 可以用宏定义,更加清晰一些
+    if authority_level == ONLY_SUPER_ADMIN:
+        if usr.super_administrator == 1:
+            return None
+        else:
+            return request_failed(3, "非超级管理员，没有对应权限")
     return None
 
-def AssetWarpper(req, function, authority_level, data=None):
+def parse_data(request, data_require):
+    if (request.method == "POST") or (request.method == "PUT"):
+        tmp_body = request.body.decode("utf-8")
+        
+        try:
+            body = json.loads(tmp_body) 
+        except BaseException as error:
+            print("During get_session_id: ", error, tmp_body)
 
-    if req.method == 'POST':
+        data = return_field(body, data_require)
+
+        return data
+
+def AssetWarpper(req, function, authority_level=None, data_require=None, validate_data=None):
+
+    if (req.method == 'POST') or (req.method == 'PUT'):
         session_id = get_session_id(req)
+        # print(session_id)
     
         # 下面是 session_id to user的过程
         sessionRecord =SessionPool.objects.filter(sessionId=session_id).first()
@@ -29,13 +49,22 @@ def AssetWarpper(req, function, authority_level, data=None):
             else:
                 usr = sessionRecord.user
 
-                # TODO
-                check_result = check_authority(authority_level)
-                if check_result != None:
-                    return check_result
+                # 检查权限
+                check_error = check_authority(authority_level, usr)
+                if check_error != None:
+                    return check_error
                 
-                # TODO:从req中解析出数据
-                # 使用return field
+                # 从req中解析出数据
+                if data_require != None:
+                    data = parse_data(req, data_require)
+                else:
+                    data = None
+
+                # 检查数据是否合理有效, 再传一个 validate_data 函数进来
+                if(validate_data != None):
+                    data_error = validate_data(data)
+                    if data_error != None:
+                        return data_error
 
                 return function(usr, data)           
         else:

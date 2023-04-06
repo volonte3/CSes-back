@@ -12,6 +12,12 @@ def sha256(password: str):
     hashed_password = hash_object.hexdigest()
     return hashed_password
 
+# 用于调试打印
+def debug_print(name, content):
+    print("----------------------------------------")
+    print(name, content)
+    print("----------------------------------------")
+
 def parse_children(children_string):
     # 这里要不要增加children_string==None的一个判断
     children_list = children_string.split('$')

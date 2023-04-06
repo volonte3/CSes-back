@@ -34,7 +34,6 @@ def add_asset_class(req: Request):
 def _give_tree(usr, data=None):
     # 根据这个usr的department_id来给出这个department的资产分类树
     
-
     # 找到这个department的根节点
     rootNode = AssetClass.objects.filter(department = usr.department, property = 0).first()
 
@@ -54,9 +53,22 @@ def _give_tree(usr, data=None):
 def give_tree(req: Request):
     return AssetWarpper(req=req, function=_give_tree, authority_level=ONLY_ASSET_ADMIN)
 
+def _superuser_create(usr, data):
+    UserName = data["UserName"]
 
+    # 如果该用户本来就存在
+    filtered_user = User.objects.filter(name=UserName).first()
+    if(filtered_user != None):
+        return request_failed(4, "存在重复用户名")
     
+    # 如果存在重复业务实体
+    return request_success()
 
+
+
+def superuser_create(req: Request):
+    return AssetWarpper(req=req, function=_superuser_create, authority_level=ONLY_SUPER_ADMIN, \
+        data_require=["UserName", "EntityName"])
 
     
 

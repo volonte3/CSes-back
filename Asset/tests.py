@@ -31,12 +31,12 @@ class AssetTests(TestCase):
         self.u1 = User.objects.create(
             name = 'chusheng_1',password = sha256(self.raw_password),
             entity = self.e1,department= self.d1,
-            super_administrator = 0,system_administrator = 1, asset_administrator=0
+            super_administrator = 1,system_administrator = 0, asset_administrator=0
         )
         self.u2 = User.objects.create(
             name="chusheng_2", password=sha256(self.raw_password),
             entity = self.e1,department= self.d1,
-            super_administrator = 1,system_administrator = 0, asset_administrator=0
+            super_administrator = 0,system_administrator = 1, asset_administrator=0
         )
         self.u3 = User.objects.create(
             name="chusheng_3", password=sha256(self.raw_password),
@@ -74,7 +74,7 @@ class AssetTests(TestCase):
             department = self.d1, name = "车辆", parent = self.ac2, children = "", property = 2
         )
         
-    def test_tree1(self):
+    def test_tree_1(self):
         c = Client()
         c.post(
             "/User/login",
@@ -86,8 +86,67 @@ class AssetTests(TestCase):
             data={"SessionID": "1"},
             content_type="application/json",
         )
-        print("-------------")
-        print(resp.json()["treeData"])
-        print("-------------")
         self.assertEqual(resp.json()["code"], 0)
-# Create your tests here.
+
+    def test_superuser_create_1(self):
+        # 检查正常返回
+        c = Client()
+        
+        # 先进行登录
+        c.post(
+            "/User/login",
+            data={"UserName": self.u1.name, "Password": self.raw_password, "SessionID": "1"},
+            content_type="application/json",
+        )
+
+        # 然后再根据登录的sessionID进行
+        resp = c.put(
+            "/SuperUser/Create",
+            data={"SessionID": "1", "UserName": "张三", "EntityName":"大象金融"},
+            content_type="application/json",
+        )
+
+        self.assertEqual(resp.json()["code"], 0)
+
+    def test_superuser_create_2(self):
+        # 检查非超级管理员登录
+        # 返回:request_failed(3, "非超级管理员，没有对应权限")
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+
+        # 然后再根据登录的sessionID进行
+        resp = c.put(
+            "/SuperUser/Create",
+            data={"SessionID": "2", "UserName": "张三", "EntityName":"大象金融"},
+            content_type="application/json",
+        )
+        
+
+        self.assertEqual(resp.json()["code"], 3)
+    
+    def test_superuser_create_3(self):
+        # 检查创建同名
+        # 返回:request_failed(4, "存在重复用户名")
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u1.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+
+        # 然后再根据登录的sessionID进行
+        resp = c.put(
+            "/SuperUser/Create",
+            data={"SessionID": "2", "UserName": "chusheng_1", "EntityName":"大象金融"},
+            content_type="application/json",
+        )
+        
+
+        self.assertEqual(resp.json()["code"], 4)
+
+
+
