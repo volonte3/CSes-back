@@ -133,8 +133,51 @@ class UserTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(resp.json()["Authority"],0)
 
     def test_userinfo2(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/info/2",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(resp.json()["Authority"],1)
+    
+    def test_userinfo3(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "3"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/info/3",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(resp.json()["Authority"],2)
+
+    def test_userinfo4(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u4.name, "Password": self.raw_password, "SessionID": "4"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/info/4",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(resp.json()["Authority"],3)
+
+    def test_userinfo5(self):
         c = Client()
         c.post(
             "/User/login",
@@ -147,7 +190,7 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"],1)
     
-    def test_userinfo3(self):
+    def test_userinfo6(self):
         c = Client()
         c.post(
             "/User/login",
