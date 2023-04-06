@@ -54,10 +54,6 @@ def get_asset_class(asset_class_id):
     assert asset_class != None, "Asset Class NOT Found!"
     return asset_class
 
-def parse_children(children_string):
-    # 这里要不要增加children_string==None的一个判断
-    children_list = children_string.split('$')
-    return children_list[1:]  # 去除最前面的一个空格
 
 def give_subtree_recursive(asset_class_id, department_id):
     nodeData = {}

@@ -13,6 +13,7 @@ class Entity(models.Model):
 class Department(models.Model):
     id = models.BigAutoField(primary_key = True)
     parent = models.ForeignKey(to = "Department", on_delete = models.CASCADE, null = True) # 上一级 Department
+    children = models.CharField(max_length=256, null = True)   # 存储方式, $1$2....
     entity = models.ForeignKey(to = Entity, on_delete = models.CASCADE)
     name = models.CharField(max_length = 128)
     chi
