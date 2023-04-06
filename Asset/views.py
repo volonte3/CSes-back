@@ -37,7 +37,7 @@ def _give_tree(usr, data=None):
     return request_success({"treeData":treeData})
 
 def give_tree(req: Request):
-    return session_id_to_user(req=req, function=_give_tree, authority_level=ONLY_ASSET_ADMIN)
+    return AssetWarpper(req=req, function=_give_tree, authority_level=ONLY_ASSET_ADMIN)
 
 
     

@@ -15,6 +15,7 @@ class Department(models.Model):
     parent = models.ForeignKey(to = "Department", on_delete = models.CASCADE, null = True) # 上一级 Department
     entity = models.ForeignKey(to = Entity, on_delete = models.CASCADE)
     name = models.CharField(max_length = 128)
+    chi
 
     def __str__(self):
         return self.name

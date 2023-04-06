@@ -15,7 +15,7 @@ def check_authority(authority_level):
     # 可以用宏定义,更加清晰一些
     return None
 
-def session_id_to_user(req, function, authority_level, data=None):
+def AssetWarpper(req, function, authority_level, data=None):
 
     if req.method == 'POST':
         session_id = get_session_id(req)
@@ -42,6 +42,7 @@ def session_id_to_user(req, function, authority_level, data=None):
             return request_failed(1, "session id do not exist")
     else:
         return BAD_METHOD
+
 
 def get_department(department_id):
     department = Department.objects.filter(id=department_id)
