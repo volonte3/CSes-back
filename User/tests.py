@@ -176,7 +176,7 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"],0)
         self.assertEqual(resp.json()["Authority"],3)
-
+    
     def test_userinfo5(self):
         c = Client()
         c.post(
