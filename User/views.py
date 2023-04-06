@@ -100,17 +100,3 @@ def user_info(req: Request, sessionId:str):
     else:
         return BAD_METHOD
     
-# def get_all_member(req: Request,sessionId:str):
-#     if req.method == 'Get':
-#         sessionRecord =SessionPool.objects.filter(sessionId=sessionId).first()
-#         if sessionRecord:
-#             if sessionRecord.expireAt < dt.datetime.now(pytz.timezone(TIME_ZONE)):
-#                 SessionPool.objects.filter(sessionId=sessionId).delete()
-#                 return request_failed(2, "session id expire")
-#             else:
-#                 #TO DO
-#                 pass
-#         else:
-#             return request_failed(1, "session id doesn't exist")
-#     else:
-#         return BAD_METHOD
