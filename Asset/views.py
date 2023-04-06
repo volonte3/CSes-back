@@ -5,10 +5,11 @@ from utils.utils_asset import *
 from utils.config import *
 from rest_framework.request import Request
 from django.http import HttpResponse
-
+from utils.utils_add_data import add_asset_class_1
 
 def add_data(req: Request):
-    return HttpResponse("Congratulations! You have successfully installed the requirements. Go ahead!")
+    add_asset_class_1()
+    return HttpResponse("Congratulations! You have successfully added many data. Go ahead!")
 
 def _add_asset_class(usr:User, data):
 
