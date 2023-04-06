@@ -16,7 +16,6 @@ class Department(models.Model):
     children = models.CharField(max_length=256, null = True)   # 存储方式, $1$2....
     entity = models.ForeignKey(to = Entity, on_delete = models.CASCADE)
     name = models.CharField(max_length = 128)
-    chi
 
     def __str__(self):
         return self.name

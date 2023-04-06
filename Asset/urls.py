@@ -3,4 +3,5 @@ import Asset.views as views
 
 urlpatterns = [
     path('/tree', views.give_tree), 
+    path('/add_data', views.add_data), 
 ]

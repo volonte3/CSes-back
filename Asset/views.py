@@ -3,6 +3,12 @@ from User.models import User
 from utils.utils_request import request_success
 from utils.utils_asset import * 
 from utils.config import *
+from rest_framework.request import Request
+from django.http import HttpResponse
+
+
+def add_data(req: Request):
+    return HttpResponse("Congratulations! You have successfully installed the requirements. Go ahead!")
 
 def _add_asset_class(usr:User, data):
 
