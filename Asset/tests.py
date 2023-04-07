@@ -78,7 +78,7 @@ class AssetTests(TestCase):
         c = Client()
         c.post(
             "/User/login",
-            data={"UserName": self.u1.name, "Password": self.raw_password, "SessionID": "1"},
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "1"},
             content_type="application/json",
         )
         resp = c.post(
@@ -109,12 +109,12 @@ class AssetTests(TestCase):
         # 用创建的这个系统管理员登录一下
         resp2 = c.post(
             "/User/login",
-            data={"UserName": "张三", "Password": "yiqunchusheng", "SessionID": "3"},
+            data={"UserName": "张三", "Password": MD5("yiqunchusheng"), "SessionID": "3"},
             content_type="application/json",
         )
 
         self.assertEqual(resp.json()["code"], 0)
-        self.assertEqual(resp.json()["code"], 0 )
+        self.assertEqual(resp2.json()["code"], 0 )
 
     def test_superuser_create_2(self):
         # 检查非超级管理员登录

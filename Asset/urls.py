@@ -5,5 +5,5 @@ urlpatterns = [
     path('/tree', views.give_tree), 
     path('/add_data', views.add_data), 
     path('/Create', views.superuser_create),
-    path('')
+    path('/Delete/<str:SessionID>/<str:EntityName>', views.superuser_delete),
 ]

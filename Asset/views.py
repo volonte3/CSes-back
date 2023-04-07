@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from utils.utils_add_data import add_asset_class_1
 
 def add_data(req: Request):
+    # 增加数据接口
     # add_asset_class_1()
     # ac0 = AssetClass.objects.filter(id = 1).first()
     return HttpResponse("Congratulations! You have successfully added many data. Go ahead!")
@@ -25,6 +26,7 @@ def _add_asset_class(usr:User, data):
 
 
 def add_asset_class(req: Request):
+    # TODO
     # 先解析出数据, 
     pass
     # 增加一个资产类别类
@@ -84,11 +86,13 @@ def _superuser_create(usr, data):
     return request_success()
 
 
-
 def superuser_create(req: Request):
     return AssetWarpper(req=req, function=_superuser_create, authority_level=ONLY_SUPER_ADMIN, \
         data_require=["UserName", "EntityName"])
 
-    
 
-    
+def _superuser_delete(req: Request):
+    pass  
+
+def superuser_delete(req: Request):
+    return AssetWarpper(req=req, function=_superuser_delete, authority_level=ONLY_SUPER_ADMIN)
