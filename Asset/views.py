@@ -102,8 +102,28 @@ def _superuser_delete(usr, data):
     # 所有与该实体关联的用户应该也都级联删除了
     return request_success()  
 
-def superuser_delete(req: Request, SessionID: (str or int), EntityName: str):
+def superuser_delete(req: Request, SessionID: str, EntityName: str):
     data_pass = {}
     data_pass["session_id"] = SessionID
     data_pass["entity_name"] = EntityName
     return AssetWarpper(req=req, function=_superuser_delete, authority_level=ONLY_SUPER_ADMIN, data_pass=data_pass)
+
+def _superuser_info(usr, data=None):
+
+    # 把所有的业务实体和对应的系统管理员都返回
+
+    # 筛选出所有系统管理员
+    system_user_list = User.objects.filter(system_administrator=1)
+    entity_manager = []
+    for system_user in system_user_list:
+        item = {}
+        item[system_user.entity.name] = system_user.name
+        entity_manager.append(item)
+    return_data = {}
+    return_data["entity_manager"] = entity_manager
+    return request_success(return_data)
+
+def superuser_info(req: Request, SessionID: str):
+    data_pass = {}
+    data_pass["session_id"] = SessionID
+    return AssetWarpper(req=req, function=_superuser_info, authority_level=ONLY_SUPER_ADMIN, data_pass=data_pass)

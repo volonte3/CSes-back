@@ -214,6 +214,35 @@ class AssetTests(TestCase):
 
         self.assertEqual(resp2.json()["code"], 0)
         self.assertEqual(resp3.json()["code"], 2)
+    
+    def test_superuser_info_1(self):
+
+        c = Client()
+
+        # 超级管理员先登录
+        c.post(
+            "/User/login",
+            data={"UserName": self.u1.name, "Password": self.raw_password, "SessionID": "1"},
+            content_type="application/json",
+        )
+
+         # 然后进行创建
+        resp1 = c.put(
+            "/SuperUser/Create",
+            data={"SessionID": "1", "UserName": "张三", "EntityName":"大象金融"},
+            content_type="application/json",
+        )
+
+        # 然后获取信息
+        resp = c.get(
+            "/SuperUser/info/1",
+            content_type="application/json",
+        )
+
+        debug_print("返回体", resp.json())
+
+        self.assertEqual(resp.json()["code"], 0)
+
 
 
 

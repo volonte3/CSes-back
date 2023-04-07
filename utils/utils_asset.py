@@ -75,7 +75,7 @@ def AssetWarpper(req, function, authority_level=None, data_require=None, validat
         else:
             return request_failed(1, "session id do not exist")
     
-    elif req.method == 'DELETE':
+    elif (req.method == 'DELETE') or (req.method == 'GET'):
         session_id = data_pass["session_id"]
 
         # 下面是 session_id to user的过程
