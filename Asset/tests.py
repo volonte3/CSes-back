@@ -106,7 +106,15 @@ class AssetTests(TestCase):
             content_type="application/json",
         )
 
+        # 用创建的这个系统管理员登录一下
+        resp2 = c.post(
+            "/User/login",
+            data={"UserName": "张三", "Password": "yiqunchusheng", "SessionID": "3"},
+            content_type="application/json",
+        )
+
         self.assertEqual(resp.json()["code"], 0)
+        self.assertEqual(resp.json()["code"], 0 )
 
     def test_superuser_create_2(self):
         # 检查非超级管理员登录
@@ -118,7 +126,7 @@ class AssetTests(TestCase):
             content_type="application/json",
         )
 
-        # 然后再根据登录的sessionID进行
+        # 然后再根据登录的sessionID进行功能实现
         resp = c.put(
             "/SuperUser/Create",
             data={"SessionID": "2", "UserName": "张三", "EntityName":"大象金融"},
