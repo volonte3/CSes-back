@@ -1,5 +1,5 @@
 from Asset.models import AssetClass
-from User.models import User
+from User.models import User, Entity
 from utils.utils_request import request_success
 from utils.utils_asset import * 
 from utils.config import *
@@ -55,6 +55,7 @@ def give_tree(req: Request):
 
 def _superuser_create(usr, data):
     UserName = data["UserName"]
+    EntityName = data["EntityName"]
 
     # 如果该用户本来就存在
     filtered_user = User.objects.filter(name=UserName).first()
@@ -62,6 +63,24 @@ def _superuser_create(usr, data):
         return request_failed(4, "存在重复用户名")
     
     # 如果存在重复业务实体
+    filtered_entity = Entity.objects.filter(name=EntityName).first()
+    if(filtered_entity != None):
+        return request_failed(5, "存在重复业务实体")
+
+    # 新建一个entity
+    e = Entity.objects.create(name = EntityName)
+
+    # TODO: 随机设置一个密码, 先使用固定密码yiqunchusheng
+    raw_password = "yiqunchusheng"
+
+    # 新建一个系统管理员
+    User.objects.create(
+        name = UserName ,password = sha256(MD5(raw_password)),
+        entity = e ,department= None,
+        super_administrator = 0,system_administrator = 1, asset_administrator=0,
+        function_string = "0000000000000011111100"
+    )
+
     return request_success()
 
 
