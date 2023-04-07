@@ -19,6 +19,11 @@ def check_authority(authority_level, usr:User):
             return None
         else:
             return request_failed(3, "非超级管理员，没有对应权限")
+    if authority_level == ONLY_ASSET_ADMIN:
+        if usr.asset_administrator == 1:
+            return None
+        else:
+            return request_failed(3, "非资产管理员，没有对应权限")
     return None
 
 def parse_data(request, data_require):
