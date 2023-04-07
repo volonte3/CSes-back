@@ -99,7 +99,7 @@ class AssetTests(TestCase):
             content_type="application/json",
         )
 
-        # 然后再根据登录的sessionID进行
+        # 然后进行创建
         resp = c.put(
             "/SuperUser/Create",
             data={"SessionID": "1", "UserName": "张三", "EntityName":"大象金融"},
@@ -155,6 +155,31 @@ class AssetTests(TestCase):
         
 
         self.assertEqual(resp.json()["code"], 4)
+    
+    def test_superuser_delete_1(self):
+        c = Client()
+
+        # 超级管理员先登录
+        c.post(
+            "/User/login",
+            data={"UserName": self.u1.name, "Password": self.raw_password, "SessionID": "1"},
+            content_type="application/json",
+        )
+
+        # 然后进行创建
+        resp1 = c.put(
+            "/SuperUser/Create",
+            data={"SessionID": "1", "UserName": "张三", "EntityName":"大象金融"},
+            content_type="application/json",
+        )
+
+        # 超级管理员发送delete请求
+        resp2 = c.delete(
+            "/SuperUser/Delete/1/大象金融", 
+            content_type="application/json",
+        )
+
+        self.assertEqual(resp2.json()["code"], 0)
 
 
 

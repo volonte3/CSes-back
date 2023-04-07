@@ -91,8 +91,19 @@ def superuser_create(req: Request):
         data_require=["UserName", "EntityName"])
 
 
-def _superuser_delete(req: Request):
-    pass  
+def _superuser_delete(usr, data):
+    entity_name = data["entity_name"]
 
-def superuser_delete(req: Request):
-    return AssetWarpper(req=req, function=_superuser_delete, authority_level=ONLY_SUPER_ADMIN)
+    # 找到该实体进行删除
+    filtered_entity = Entity.objects.filter(name=entity_name).first()
+    if(filtered_entity == None):
+        return request_failed(4, "实体不存在")
+    Entity.objects.filter(name=entity_name).delete()
+    # 所有与该实体关联的用户应该也都级联删除了
+    return request_success()  
+
+def superuser_delete(req: Request, SessionID: (str or int), EntityName: str):
+    data_pass = {}
+    data_pass["session_id"] = SessionID
+    data_pass["entity_name"] = EntityName
+    return AssetWarpper(req=req, function=_superuser_delete, authority_level=ONLY_SUPER_ADMIN, data_pass=data_pass)

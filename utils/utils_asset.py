@@ -39,7 +39,7 @@ def parse_data(request, data_require):
 
         return data
 
-def AssetWarpper(req, function, authority_level=None, data_require=None, validate_data=None):
+def AssetWarpper(req, function, authority_level=None, data_require=None, validate_data=None, data_pass=None):
 
     if (req.method == 'POST') or (req.method == 'PUT'):
         session_id = get_session_id(req)
@@ -74,6 +74,34 @@ def AssetWarpper(req, function, authority_level=None, data_require=None, validat
                 return function(usr, data)           
         else:
             return request_failed(1, "session id do not exist")
+    
+    elif req.method == 'DELETE':
+        session_id = data_pass["session_id"]
+
+        # 下面是 session_id to user的过程
+        sessionRecord =SessionPool.objects.filter(sessionId=session_id).first()
+        if sessionRecord:
+            if sessionRecord.expireAt < dt.datetime.now(pytz.timezone(TIME_ZONE)):
+                SessionPool.objects.filter(sessionId=session_id).delete()
+                return request_failed(2, "session id expire")
+            else:
+                usr = sessionRecord.user
+
+                # 检查权限
+                check_error = check_authority(authority_level, usr)
+                if check_error != None:
+                    return check_error
+                
+                # 检查数据是否合理有效, 再传一个 validate_data 函数进来
+                if(validate_data != None):
+                    data_error = validate_data(data_pass)
+                    if data_error != None:
+                        return data_error
+
+                return function(usr, data_pass)           
+        else:
+            return request_failed(1, "session id do not exist")
+    
     else:
         return BAD_METHOD
 
