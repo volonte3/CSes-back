@@ -32,6 +32,9 @@ class UserTests(TestCase):
         self.d1_1 = Department.objects.create(name = 'CS_Department1_1', entity = self.e1, parent = self.d1, path = '110000000')
         self.d1.children = '$' + str(self.d1_1.id)
         self.d1.save()
+        self.d1_2 = Department.objects.create(name = 'CS_Department1_2', entity = self.e1, parent = self.d1, path = '120000000')
+        self.d1.children = self.d1.children + '$' + str(self.d1_2.id)
+        self.d1.save()
         self.u1 = User.objects.create(
             name = 'chusheng_1',password = sha256(self.raw_password),
             super_administrator = 1,system_administrator = 0, asset_administrator = 0,
@@ -377,7 +380,7 @@ class UserTests(TestCase):
             data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
             content_type="application/json",
         )
-        for i in range(2,10):
+        for i in range(3,10):
             resp_i = c.post(
                 "/User/department/add",
                 data={"SessionID": "2", "DepartmentPath":"100000000", "DepartmentName":"CS_Department1_" + str(i)},
@@ -417,11 +420,11 @@ class UserTests(TestCase):
         )
         resp = c.post(
             "/User/department/add",
-            data={"SessionID": "2", "DepartmentPath":"100000000", "DepartmentName":"CS_Department1_2"},
+            data={"SessionID": "2", "DepartmentPath":"100000000", "DepartmentName":"CS_Department1_3"},
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"],0)
-        self.assertEqual(resp.json()["department_path"],"120000000")
+        self.assertEqual(resp.json()["department_path"],"130000000")
 
     # 成功创建叶子部门的子部门并把所有员工转移
     def test_adddepartment9(self):
@@ -509,6 +512,7 @@ class UserTests(TestCase):
         self.assertEqual(resp.json()["code"],0)
         self.assertEqual(len(resp.json()["member"]),0)
         self.assertEqual(resp.json()["Department"][0]["DepartmentName"],self.d1_1.name)
+        self.assertEqual(resp.json()["Department"][1]["DepartmentName"],self.d1_2.name)
 
     # 查询叶子部门，返回员工信息
     def test_getnextdepartment6(self):
