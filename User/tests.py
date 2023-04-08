@@ -298,7 +298,7 @@ class UserTests(TestCase):
 
 # 系统管理员增加部门测试
     # 无权限  
-    def test_getallmember1(self):
+    def test_adddepartment1(self):
         c = Client()
         c.post(
             "/User/login",
@@ -313,7 +313,7 @@ class UserTests(TestCase):
         self.assertEqual(resp.json()["code"],4)
 
     # sessionid不存在
-    def test_getallmember2(self):
+    def test_adddepartment2(self):
         c = Client()
         c.post(
             "/User/login",
@@ -328,7 +328,7 @@ class UserTests(TestCase):
         self.assertEqual(resp.json()["code"],5)
 
     # sessionid过期    
-    def test_getallmember3(self):
+    def test_adddepartment3(self):
         SessionPool.objects.create(sessionId = "02", user = self.u2,
                                    expireAt = dt.datetime.now(pytz.timezone(TIME_ZONE)) - dt.timedelta(days=2))
         c = Client()
