@@ -50,7 +50,7 @@ def _give_tree(usr, data=None):
         children.append(give_subtree_recursive(child_id, usr.department.id))
     treeData['children'] = children
 
-    return request_success({"treeData":treeData})
+    return request_success({"treeData":[treeData]})
 
 def give_tree(req: Request):
     return AssetWarpper(req=req, function=_give_tree, authority_level=ONLY_ASSET_ADMIN)
