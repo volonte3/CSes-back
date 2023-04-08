@@ -242,7 +242,7 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"],2)
 
-# 查询业务实体下的所有员工测试（不算系统管理员本身）
+# 查询业务实体下的所有员工测试（不算系统管理员与超级管理员）
     # 成功查询所有信息
     def test_getallmember1(self):
         c = Client()
@@ -391,7 +391,7 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"],3)
 
-    # 成功创建非叶子部门的子部门
+    # 创建根部门
     def test_adddepartment7(self):
         c = Client()
         c.post(
@@ -407,8 +407,24 @@ class UserTests(TestCase):
         self.assertEqual(resp.json()["code"],0)
         self.assertEqual(resp.json()["department_path"],"200000000")
 
-    # 成功创建叶子部门的子部门（把所有员工转移）
+    # 成功创建非叶子部门的子部门
     def test_adddepartment8(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/User/department/add",
+            data={"SessionID": "2", "DepartmentPath":"100000000", "DepartmentName":"CS_Department1_2"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(resp.json()["department_path"],"120000000")
+
+    # 成功创建叶子部门的子部门并把所有员工转移
+    def test_adddepartment9(self):
         c = Client()
         c.post(
             "/User/login",
@@ -422,6 +438,109 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"],0)
         self.assertEqual(resp.json()["department_path"],"111000000")
+        self.assertEqual(len(User.objects.filter(department=self.d1_1).all()), 0)
+    
+# 查询下一级部门或员工测试
+    # 无权限  
+    def test_getnextdepartment1(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "3"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/department/3/100000000",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],2)
+
+    # sessionid不存在
+    def test_getnextdepartment2(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/department/20/100000000",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+
+    # sessionid过期    
+    def test_getnextdepartment3(self):
+        SessionPool.objects.create(sessionId = "02", user = self.u2,
+                                   expireAt = dt.datetime.now(pytz.timezone(TIME_ZONE)) - dt.timedelta(days=2))
+        c = Client()
+        resp = c.get(
+            "/User/department/02/100000000",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+    
+    # DepartmentPath无效
+    def test_getnextdepartment4(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/department/2/888000000",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],1)
+
+    # 查询非叶子部门，返回下一级的部门信息
+    def test_getnextdepartment5(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/department/2/100000000",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(len(resp.json()["member"]),0)
+        self.assertEqual(resp.json()["Department"][0]["DepartmentName"],self.d1_1.name)
+
+    # 查询叶子部门，返回员工信息
+    def test_getnextdepartment6(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/department/2/110000000",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(len(resp.json()["member"]),3)
+        self.assertEqual(len(resp.json()["Department"]),0)
+
+    # 查询根部门
+    def test_getnextdepartment7(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/department/2/000000000",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(len(resp.json()["member"]),0)
+        self.assertEqual(resp.json()["Department"][0]["DepartmentName"],self.d1.name)
     
 
  

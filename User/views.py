@@ -27,7 +27,7 @@ def delete_data(req: Request):
 def check_for_user_data(body):
     name = require(body, "UserName", "string",
                    err_msg="Missing or error type of name")
-    hashed_password = require(body, "Password", "string", 
+    hashed_password = require(body, "Password", "string",
                               err_msg="Missing or error type of password")
     assert 0 < len(name) <= 128, "Bad length of name"
     assert 0 < len(hashed_password) <= 32, "Bad length of password"
@@ -203,7 +203,6 @@ def add_department(req: Request):
                                 new_d = Department.objects.create(parent=d2, entity=e1, 
                                                                 name=DepartmentName,
                                                                 path=new_departmentpath)
-                                
                                 return_data = {
                                     "department_path" : new_departmentpath
                                 }
@@ -240,15 +239,58 @@ def get_next_department(req:Request, sessionId:str, DepartmentPath:str):
                     return request_failed(2, "no permissions")
                 else:
                     if DepartmentPath == '000000000':
-                        pass
+                        is_leaf = False
+                        root_list = list(Department.objects.filter(parent=None).all().order_by('path'))
+                        root_num = len(root_list)
+                        return_data = {
+                            "is_leaf": is_leaf,
+                            "member": [],
+                            "Department": [
+                                {
+                                    "DepartmentName": root_list[i].name,
+                                    "DepartmentPath": root_list[i].path,
+                                    "DepartmentId": (i + 1)
+                                }
+                                for i in range(0, root_num)
+                            ]
+                        }
+                        return request_success(return_data)
                     else:
                         d1 = Department.objects.filter(path=DepartmentPath).first()
                         if not d1:
-                            return request_failed(1,"部门不存在")
+                            return request_failed(1, "部门不存在")
                         else:
-                            pass
+                            children_list = parse_children(d1.children)
+                            child_num = len(children_list)
+                            if child_num == 0:
+                                is_leaf = True
+                                member_list = list(User.objects.filter(department = d1).all())
+                                return_data = {
+                                    "is_leaf": is_leaf,
+                                    "member":[
+                                        return_field(member.serialize(),["Name","Department","Authority","lock"])
+                                    for member in member_list 
+                                    if member.super_administrator == 0 and member.system_administrator == 0],
+                                    "Department": []
+                                }
+                                return request_success(return_data)
+                            else:
+                                is_leaf = False
+                                child_list = list(Department.objects.filter(parent=d1).all().order_by('path'))
+                                return_data = {
+                                    "is_leaf": is_leaf,
+                                    "member": [],
+                                    "Department": [
+                                        {
+                                            "DepartmentName": child_list[i].name,
+                                            "DepartmentPath": child_list[i].path,
+                                            "DepartmentId": (i + 1)
+                                        }
+                                        for i in range(0, child_num)
+                                    ]
+                                }
+                                return request_success(return_data)
         else:
             return request_failed(3, "session id doesn't exist")
     else:
         return BAD_METHOD
-
