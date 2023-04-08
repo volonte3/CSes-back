@@ -9,27 +9,37 @@ from utils.utils_add_data import add_asset_class_1
 
 def add_data(req: Request):
     # 增加数据接口
-    # add_asset_class_1()
+    add_asset_class_1()
     # ac0 = AssetClass.objects.filter(id = 1).first()
     return HttpResponse("Congratulations! You have successfully added many data. Go ahead!")
 
 def _add_asset_class(usr:User, data):
 
     # TODO: 判断是否存在同名的资产分类
+    natural_class = data["NaturalClass"]
+    if natural_class == 0:
+        property = 1
+    elif natural_class == 1:
+        property = 4
+    elif natural_class == 2:
+        property = 3
+    else:
+        raise KeyError
 
     AssetClass.objects.create(
-        deparment = usr.department, name = data["asset_class_name"], \
-        parent = get_asset_class(data["parent_node_value"]), children = "", \
-        property = 1 # TODO:先暂时定成1
+        department = usr.department, name = data["AssetClassName"], \
+        parent = get_asset_class(data["ParentNodeValue"]), children = "", \
+        property = property
     )
+
+    return request_success()
 
 
 
 def add_asset_class(req: Request):
-    # TODO
-    # 先解析出数据, 
-    pass
-    # 增加一个资产类别类
+
+    return AssetWarpper(req=req, function=_add_asset_class, authority_level=ONLY_ASSET_ADMIN, \
+        data_require=["AssetClassName", "ParentNodeValue", "NaturalClass"])
 
 
 
