@@ -27,17 +27,16 @@ class Client(DefaultClient):
 class UserTests(TestCase):
     def setUp(self):
         self.raw_password = "yiqunchusheng"
-        self.e1 = Entity.objects.create(name = 'CS_Company')
-        self.d1 = Department.objects.create(name = 'depart1',entity = self.e1)
+        self.e1 = Entity.objects.create(name = 'CS_Company1')
+        self.d1 = Department.objects.create(name = 'CS_Department1',entity = self.e1)
         self.u1 = User.objects.create(
             name = 'chusheng_1',password = sha256(self.raw_password),
-            entity = self.e1,department= self.d1,
             super_administrator = 1,system_administrator = 0, asset_administrator = 0,
             function_string = "0000000000000000000011"
         )
         self.u2 = User.objects.create(
             name="chusheng_2", password=sha256(self.raw_password),
-            entity = self.e1,department= self.d1,
+            entity = self.e1,
             super_administrator = 0,system_administrator = 1, asset_administrator = 0,
             function_string = "0000000000000011111100"
         )
@@ -105,7 +104,6 @@ class UserTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(resp2.json()["code"], 0)
-        print(SessionPool.objects.filter(user=self.u1).all())
         resp = c.post(
             "/User/logout",
             data={"SessionID": "1"},
@@ -237,5 +235,59 @@ class UserTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"],2)
+
+    # 成功查询所有信息
+    def test_getallmember1(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/member/2",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+
+    # 无权限  
+    def test_getallmember2(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "3"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/member/3",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],1)
+
+    # sessionid不存在
+    def test_getallmember3(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.get(
+            "/User/member/20",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],2)
+
+    # sessionid过期    
+    def test_getallmember4(self):
+        SessionPool.objects.create(sessionId = "02", user = self.u2,
+                                   expireAt = dt.datetime.now(pytz.timezone(TIME_ZONE)) - dt.timedelta(days=2))
+        c = Client()
+        resp = c.get(
+            "/User/member/02",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],2)
+
 
         

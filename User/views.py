@@ -55,7 +55,6 @@ def login(req: Request):
                 if len(session_list) > 0:
                     for session in session_list:
                         SessionPool.objects.filter(sessionId=session.sessionId).delete()
-                print("------",SessionPool.objects.filter(user=user).all())
                 session_id = get_session_id(req)
                 bind_session_id(sessionId=session_id, user=user)
                 print("successfully bind session id!")
@@ -81,7 +80,7 @@ def logout(req: Request):
 def user_info(req: Request, sessionId:str):
     print("调用了user_info函数", sessionId)
     if req.method == 'GET':
-        sessionRecord =SessionPool.objects.filter(sessionId=sessionId).first()
+        sessionRecord = SessionPool.objects.filter(sessionId=sessionId).first()
         if sessionRecord:
             if sessionRecord.expireAt < dt.datetime.now(pytz.timezone(TIME_ZONE)):
                 SessionPool.objects.filter(sessionId=sessionId).delete()
@@ -102,7 +101,33 @@ def user_info(req: Request, sessionId:str):
                 return request_success(usr_info)
         else:
             return request_failed(1, "session id doesn't exist")
+    else:
+        return BAD_METHOD
 
+def get_all_member(req:Request,sessionId:str):
+    print("调用了get_all_member函数", sessionId)
+    if req.method == "GET":
+        sessionRecord = SessionPool.objects.filter(sessionId=sessionId).first()
+        if sessionRecord:
+            if sessionRecord.expireAt < dt.datetime.now(pytz.timezone(TIME_ZONE)):
+                SessionPool.objects.filter(sessionId=sessionId).delete()
+                return request_failed(2, "session id expire")
+            else:
+                user = sessionRecord.user
+                if user.system_administrator == 0:
+                    return request_failed(1, "no permissions")
+                else:
+                    e = user.entity
+                    member_list = list(User.objects.filter(entity=e).all())
+                    member_list.remove(user)
+                    return_data = {
+                        "member":[
+                            return_field(member.serialize(),["Name","Department","Authority","lock"])
+                        for member in member_list]
+                    }
+                    return request_success(return_data)
+        else:
+            return request_failed(2, "session id doesn't exist")
     else:
         return BAD_METHOD
     
