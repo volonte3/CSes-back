@@ -117,7 +117,9 @@ def _superuser_info(usr, data=None):
     entity_manager = []
     for system_user in system_user_list:
         item = {}
-        item[system_user.entity.name] = system_user.name
+        # item[system_user.entity.name] = system_user.name
+        item["Entity"] = system_user.entity.name
+        item["Manager"] = system_user.name
         entity_manager.append(item)
     return_data = {}
     return_data["entity_manager"] = entity_manager
