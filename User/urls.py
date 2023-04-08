@@ -9,4 +9,5 @@ urlpatterns = [
     path('/info/<str:sessionId>',views.user_info),
     path('/member/<str:sessionId>',views.get_all_member),
     path('/department/add',views.add_department),
+    path('/department/<str:sessionId>/<str:DepartmentPath>',views.get_next_department),
 ]

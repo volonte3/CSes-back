@@ -124,11 +124,11 @@ def get_all_member(req: Request, sessionId: str):
                 else:
                     e1 = user.entity
                     member_list = list(User.objects.filter(entity=e1).all())
-                    member_list.remove(user)
                     return_data = {
                         "member":[
                             return_field(member.serialize(),["Name","Department","Authority","lock"])
-                        for member in member_list]
+                        for member in member_list 
+                        if member.super_administrator == 0 and member.system_administrator == 0]
                     }
                     return request_success(return_data)
         else:
@@ -222,3 +222,33 @@ def add_department(req: Request):
             return request_failed(5, "session id doesn't exist")
     else:
         return BAD_METHOD
+    
+    
+def get_next_department(req:Request, sessionId:str, DepartmentPath:str):
+    print("调用了get_all_member函数")
+    print(sessionId)
+    print(DepartmentPath)
+    if req.method == 'GET':
+        sessionRecord = SessionPool.objects.filter(sessionId=sessionId).first()
+        if sessionRecord:
+            if sessionRecord.expireAt < dt.datetime.now(pytz.timezone(TIME_ZONE)):
+                SessionPool.objects.filter(sessionId=sessionId).delete()
+                return request_failed(3, "session id expire")
+            else:
+                user = sessionRecord.user
+                if user.system_administrator == 0:
+                    return request_failed(2, "no permissions")
+                else:
+                    if DepartmentPath == '000000000':
+                        pass
+                    else:
+                        d1 = Department.objects.filter(path=DepartmentPath).first()
+                        if not d1:
+                            return request_failed(1,"部门不存在")
+                        else:
+                            pass
+        else:
+            return request_failed(3, "session id doesn't exist")
+    else:
+        return BAD_METHOD
+
