@@ -29,6 +29,9 @@ def debug_print(name, content):
     print("----------------------------------------")
 
 def parse_children(children_string):
-    # 这里要不要增加children_string==None的一个判断
-    children_list = children_string.split('$')
-    return children_list[1:]  # 去除最前面的一个空格
+    # 增加children_string==None的一个判断
+    if (children_string == None):
+        return []
+    else:
+        children_list = children_string.split('$')
+        return children_list[1:]  # 去除最前面的一个空格
