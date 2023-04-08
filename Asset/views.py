@@ -44,7 +44,38 @@ def _add_asset_class(usr:User, data):
     
     return request_success()
 
+def _modify_asset_class(usr: User, data):
 
+    # 判断是否存在同名的资产分类
+    same_name = AssetClass.objects.filter(name = data["AssetClassName"], department = usr.department)
+    if(len(same_name) != 0):
+        return request_failed(4, "该部门内存在同名资产分类")
+    
+    natural_class = data["NaturalClass"]
+    if natural_class == 0:
+        property = 1
+    elif natural_class == 1:
+        property = 4
+    elif natural_class == 2:
+        property = 3
+    else:
+        raise KeyError
+
+    asset_class = AssetClass.objects.filter(id=data["NodeValue"]).first()
+    if (asset_class.property == 0) and data["NaturalClass"] != 0:
+        return request_failed(5, "不能修改根节点的自然分类")
+    
+    # 进行更改
+    asset_class.name = data["AssetClassName"]
+    if (asset_class.property != 0):
+        asset_class.property = property
+    asset_class.save()
+
+    return request_success()
+
+def modify_asset_class(req: Request):
+    return AssetWarpper(req=req, function=_modify_asset_class, authority_level=ONLY_ASSET_ADMIN, \
+        data_require=["AssetClassName", "NodeValue", "NaturalClass"])
 
 def add_asset_class(req: Request):
 
