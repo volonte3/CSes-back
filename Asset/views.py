@@ -15,7 +15,12 @@ def add_data(req: Request):
 
 def _add_asset_class(usr:User, data):
 
-    # TODO: 判断是否存在同名的资产分类
+    # 判断是否存在同名的资产分类
+    same_name = AssetClass.objects.filter(name = data["AssetClassName"], department = usr.department)
+    if(len(same_name) != 0):
+        return request_failed(4, "该部门内存在同名资产分类")
+
+
     natural_class = data["NaturalClass"]
     if natural_class == 0:
         property = 1
@@ -26,12 +31,17 @@ def _add_asset_class(usr:User, data):
     else:
         raise KeyError
 
-    AssetClass.objects.create(
+    parent_asset_class = get_asset_class(data["ParentNodeValue"])
+    asset_class = AssetClass.objects.create(
         department = usr.department, name = data["AssetClassName"], \
-        parent = get_asset_class(data["ParentNodeValue"]), children = "", \
+        parent = parent_asset_class, children = "", \
         property = property
     )
 
+    # 修改父亲节点的children
+    parent_asset_class.children += ('$' + str(asset_class.id))
+    parent_asset_class.save()
+    
     return request_success()
 
 
