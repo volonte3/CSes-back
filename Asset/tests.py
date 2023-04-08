@@ -242,6 +242,25 @@ class AssetTests(TestCase):
         debug_print("返回体", resp.json())
 
         self.assertEqual(resp.json()["code"], 0)
+    
+    def test_add_asset_class_1(self):
+        c = Client()
+
+        # 资产管理员先登录
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "1"},
+            content_type="application/json",
+        )
+
+        # 资产管理员调用add_asset_class函数
+        resp = c.post(
+            "/Asset/AddAssetClass",
+            data={"SessionID": "1", "ParentNodeValue": 1, "AssetClassName": "这是一个待添加的资产类别", "NaturalClass": 0},
+            content_type="application/json",
+        )
+
+        self.assertEqual(resp.json()["code"], 0)
 
 
 

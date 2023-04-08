@@ -10,7 +10,7 @@ class AssetClass(models.Model):
     parent = models.ForeignKey(to = "AssetClass", on_delete = models.CASCADE, null = True)
     children = models.CharField(max_length=256, null = True)   # 存储方式, $1$2....
     property = models.IntegerField()  # 资产类别属性 
-    # 0: 根节点，不出现在前端展示中
+    # 0: 根节点
     # 1: 非根节点, 非品类
     # 2: 尚未被定义为条目型资产还是数量型资产的品类
     # 3: 条目型资产品类
