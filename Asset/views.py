@@ -29,7 +29,7 @@ def _add_asset_class(usr:User, data):
     AssetClass.objects.create(
         department = usr.department, name = data["AssetClassName"], \
         parent = get_asset_class(data["ParentNodeValue"]), children = "", \
-        property = 1 # TODO:先暂时定成1
+        property = property
     )
 
     return request_success()
