@@ -48,7 +48,7 @@ def _modify_asset_class(usr: User, data):
 
     # 判断是否存在同名的资产分类
     same_name = AssetClass.objects.filter(name = data["AssetClassName"], department = usr.department)
-    if(len(same_name) != 0):
+    if(len(same_name) != 0 and same_name.id != data["NodeValue"]):
         return request_failed(4, "该部门内存在同名资产分类")
     
     natural_class = data["NaturalClass"]
