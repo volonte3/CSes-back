@@ -7,5 +7,7 @@ urlpatterns = [
     path('/Create', views.superuser_create),
     path('/Delete/<str:SessionID>/<str:EntityName>', views.superuser_delete, name="superuser_delete"),
     path('/info/<str:SessionID>', views.superuser_info),
-    path('/AddAssetClass', views.add_asset_class)
+    path('/AddAssetClass', views.add_asset_class),
+    path('/ModifyAssetClass', views.modify_asset_class),
+
 ]

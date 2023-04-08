@@ -3,6 +3,7 @@ from User.models import Entity,Department, User, SessionPool
 from Asset.models import AssetClass, Asset, PendingRequests
 from django.test import Client as DefaultClient
 from utils.utils_other import *
+from utils.utils_asset import *
 
 class Client(DefaultClient):
     def __init__(self, *args, **kw):
@@ -253,6 +254,9 @@ class AssetTests(TestCase):
             content_type="application/json",
         )
 
+        # parent_asset_class = get_asset_class(1)
+        # debug_print("former children", parent_asset_class.children)
+
         # 资产管理员调用add_asset_class函数
         resp = c.post(
             "/Asset/AddAssetClass",
@@ -260,7 +264,105 @@ class AssetTests(TestCase):
             content_type="application/json",
         )
 
+        # parent_asset_class = get_asset_class(1)
+        # debug_print("later children", parent_asset_class.children)
+
         self.assertEqual(resp.json()["code"], 0)
+    
+    def test_add_asset_class_2(self):
+        # 测试能否创建同名资产分类
+        c = Client()
+
+        # 资产管理员先登录
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "1"},
+            content_type="application/json",
+        )
+
+
+        # 资产管理员调用add_asset_class函数
+        resp = c.post(
+            "/Asset/AddAssetClass",
+            data={"SessionID": "1", "ParentNodeValue": 1, "AssetClassName": "这是一个待添加的资产类别", "NaturalClass": 0},
+            content_type="application/json",
+        )
+
+        # 再调用一次
+        resp2 = c.post(
+            "/Asset/AddAssetClass",
+            data={"SessionID": "1", "ParentNodeValue": 0, "AssetClassName": "这是一个待添加的资产类别", "NaturalClass": 0},
+            content_type="application/json",
+        )
+
+
+        self.assertEqual(resp.json()["code"], 0)
+        self.assertEqual(resp2.json()["code"], 4)
+    
+    def test_modify_asset_class_1(self):
+        c = Client()
+
+        # 资产管理员先登录
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "1"},
+            content_type="application/json",
+        )
+
+        # 资产管理员调用add_asset_class函数
+        resp = c.post(
+            "/Asset/AddAssetClass",
+            data={"SessionID": "1", "ParentNodeValue": 1, "AssetClassName": "这是一个待添加的资产类别", "NaturalClass": 0},
+            content_type="application/json",
+        )
+
+        asset_class = get_asset_class(1)
+        debug_print(asset_class.property, asset_class.name)
+
+        # 资产管理员调用modify_asset_class函数
+        resp2 = c.post(
+            "/Asset/ModifyAssetClass",
+            data={"SessionID": "1", "NodeValue": 1, "AssetClassName": "改成这一个资产类别", "NaturalClass": 2},
+            content_type="application/json",
+        )
+
+        self.assertEqual(resp2.json()["code"], 5)
+
+    def test_modify_asset_class_2(self):
+        c = Client()
+
+        # 资产管理员先登录
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "1"},
+            content_type="application/json",
+        )
+
+        # 资产管理员调用add_asset_class函数
+        resp = c.post(
+            "/Asset/AddAssetClass",
+            data={"SessionID": "1", "ParentNodeValue": 1, "AssetClassName": "这是一个待添加的资产类别", "NaturalClass": 0},
+            content_type="application/json",
+        )
+
+        asset_class = get_asset_class(1)
+        debug_print(asset_class.property, asset_class.name)
+
+        # 资产管理员调用modify_asset_class函数
+        resp2 = c.post(
+            "/Asset/ModifyAssetClass",
+            data={"SessionID": "1", "NodeValue": 1, "AssetClassName": "改成这一个资产类别", "NaturalClass": 0},
+            content_type="application/json",
+        )
+
+        asset_class = get_asset_class(1)
+        debug_print(asset_class.property, asset_class.name)
+
+        self.assertEqual(resp2.json()["code"], 0)
+
+
+
+
 
 
 
