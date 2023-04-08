@@ -9,7 +9,17 @@ from utils.sessions import *
 # from utils.manipulate_database import *
 from rest_framework.request import Request
 from utils.utils_other import *
+from utils.utils_add_data import *
 
+def add_data(req: Request):
+    # 增加数据接口
+    add_user_class_1()
+    return HttpResponse("Congratulations! You have successfully added many data. Go ahead!")
+
+def delete_data(req: Request):
+    # 删除数据接口
+    delete_user_class_1()
+    return HttpResponse("Congratulations! You have successfully added many data. Go ahead!")
 
 def check_for_user_data(body):
     name = require(body, "UserName", "string",
@@ -24,11 +34,7 @@ def check_for_user_data(body):
 @CheckRequire
 def login(req: Request):
     if req.method == 'POST':
-        
-        # TODO: bugfix
-        # if req.user: 
-        #     return request_failed(1, "用户已登录") 
-        
+        # 约定：同一用户可以同时在第二个设备上可以成功登录，但会顶掉第一个设备上的sessionid
         tmp_body = req.body.decode("utf-8")
         try:
             body = json.loads(tmp_body) 
@@ -44,10 +50,12 @@ def login(req: Request):
         if not user:
             return request_failed(2, "用户名或密码错误")
         else:
-            print("__", user.name)
-            print("__", user.password)
-            print("__", sha_hashed_password)
             if user.password == sha_hashed_password:
+                session_list = SessionPool.objects.filter(user=user).all()
+                if len(session_list) > 0:
+                    for session in session_list:
+                        SessionPool.objects.filter(sessionId=session.sessionId).delete()
+                print("------",SessionPool.objects.filter(user=user).all())
                 session_id = get_session_id(req)
                 bind_session_id(sessionId=session_id, user=user)
                 print("successfully bind session id!")
@@ -59,11 +67,9 @@ def login(req: Request):
 
 def logout(req: Request):
     
-    # TODO
-    # 验证是否存在user
     if req.method == 'POST':
         session_id = get_session_id(req)
-        sessionRecord =SessionPool.objects.filter(sessionId=session_id).first()
+        sessionRecord = SessionPool.objects.filter(sessionId=session_id).first()
         if sessionRecord:
             disable_session_id(sessionId=session_id)
             return request_success()

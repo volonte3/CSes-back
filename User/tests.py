@@ -59,13 +59,8 @@ class UserTests(TestCase):
             super_administrator = 0,system_administrator = 0, asset_administrator = 0,
             function_string = "1111100000000000000000"
         )
-        SessionPool.objects.create(sessionId = "1", user = self.u1)
-        SessionPool.objects.create(sessionId = "2", user = self.u2)
-        SessionPool.objects.create(sessionId = "3", user = self.u3)
-        SessionPool.objects.create(sessionId = "4", user = self.u4)
-        SessionPool.objects.create(sessionId = "5", user = self.u5,
-                                   expireAt = dt.datetime.now(pytz.timezone(TIME_ZONE)) - dt.timedelta(days=2))
-    
+        
+    # 用户名不存在 
     def test_login1(self):
         c = Client()
         resp = c.post(
@@ -75,6 +70,7 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"], 2)
 
+    # 密码不对
     def test_login2(self):
         c = Client()
         resp = c.post(
@@ -83,7 +79,8 @@ class UserTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"], 3)
-        
+
+    # 成功登录 
     def test_login3(self):
         c = Client()
         resp = c.post(
@@ -93,6 +90,30 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"], 0)
     
+    # 用户已登录
+    def test_login4(self):
+        c = Client()
+        resp1 = c.post(
+            "/User/login",
+            data={"UserName": self.u1.name, "Password": self.raw_password, "SessionID": "1"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp1.json()["code"], 0)
+        resp2 = c.post(
+            "/User/login",
+            data={"UserName": self.u1.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp2.json()["code"], 0)
+        print(SessionPool.objects.filter(user=self.u1).all())
+        resp = c.post(
+            "/User/logout",
+            data={"SessionID": "1"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"], 1)
+
+    # 成功登出
     def test_logout1(self):
         c = Client()
         c.post(
@@ -107,6 +128,7 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"], 0)
     
+    # sessionid不存在
     def test_logout2(self):
         c = Client()
         c.post(
@@ -121,6 +143,17 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"], 1)
 
+    # 未登录
+    def test_logout3(self):
+        c = Client()
+        resp = c.post(
+            "/User/logout",
+            data={"SessionID": "1"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"], 1)
+
+    # 超级管理员
     def test_userinfo1(self):
         c = Client()
         c.post(
@@ -135,6 +168,7 @@ class UserTests(TestCase):
         self.assertEqual(resp.json()["code"],0)
         self.assertEqual(resp.json()["Authority"],0)
 
+    # 系统管理员
     def test_userinfo2(self):
         c = Client()
         c.post(
@@ -148,7 +182,8 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"],0)
         self.assertEqual(resp.json()["Authority"],1)
-    
+
+    # 资产管理员
     def test_userinfo3(self):
         c = Client()
         c.post(
@@ -163,6 +198,7 @@ class UserTests(TestCase):
         self.assertEqual(resp.json()["code"],0)
         self.assertEqual(resp.json()["Authority"],2)
 
+    # 普通用户
     def test_userinfo4(self):
         c = Client()
         c.post(
@@ -176,7 +212,8 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"],0)
         self.assertEqual(resp.json()["Authority"],3)
-    
+
+    # sessionid不存在
     def test_userinfo5(self):
         c = Client()
         c.post(
@@ -190,16 +227,15 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"],1)
     
+    # sessionid过期    
     def test_userinfo6(self):
+        SessionPool.objects.create(sessionId = "5", user = self.u5,
+                                   expireAt = dt.datetime.now(pytz.timezone(TIME_ZONE)) - dt.timedelta(days=2))
         c = Client()
-        c.post(
-            "/User/login",
-            data={"UserName": self.u5.name, "Password": self.raw_password, "SessionID": "5"},
-            content_type="application/json",
-        )
         resp = c.get(
             "/User/info/5",
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"],2)
+
         
