@@ -212,7 +212,42 @@ def remove_member(req:Request, sessionId:str, UserName:str):
         return BAD_METHOD
 
 
-
+def lock_member(req:Request):
+    print("调用了lock_member函数")
+    if req.method == "PUT":
+        session_id = get_session_id(req)
+        sessionRecord = SessionPool.objects.filter(sessionId=session_id).first()
+        if sessionRecord:
+            if sessionRecord.expireAt < dt.datetime.now(pytz.timezone(TIME_ZONE)):
+                SessionPool.objects.filter(sessionId=session_id).delete()
+                return request_failed(3, "session id expire")
+            else:
+                user = sessionRecord.user
+                if user.system_administrator == 0:
+                    return request_failed(2, "no permissions")
+                else:
+                    e1 = user.entity
+                    tmp_body = req.body.decode("utf-8")
+                    try:
+                        body = json.loads(tmp_body)
+                    except BaseException as error:
+                        print(error, tmp_body)
+                    member_name = require(body, "UserName", "string",
+                                          err_msg="Missing or error type of UserName")
+                    member = User.objects.filter(name=member_name,entity=e1).first()
+                    if not member:
+                        return request_failed(1,"用户不存在")
+                    else:
+                        if member.system_administrator == 1:
+                            return request_failed(1,"不能锁定系统管理员")
+                        else:
+                            member.Is_Locked = not member.Is_Locked
+                            member.save()
+                            return request_success()
+        else:
+            return request_failed(3, "session id doesn't exist")
+    else:
+        return BAD_METHOD
 
 
 def add_department(req: Request):

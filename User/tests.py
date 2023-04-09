@@ -486,6 +486,103 @@ class UserTests(TestCase):
         self.assertEqual(resp.json()["code"],0)
         self.assertEqual(len(list(User.objects.filter(department=self.d1_1).all())),2)
 
+# 系统管理员锁定/解锁用户测试
+# 无权限
+    def test_lockmember1(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "3"},
+            content_type="application/json",
+        )
+        resp = c.put(
+            "/User/lock",
+            data={"SessionID": "3","UserName": "chusheng_4"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],2)
+
+    # sessionid不存在
+    def test_lockmember2(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.put(
+            "/User/lock",
+            data={"SessionID": "20","UserName": "chusheng_4"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+
+    # sessionid过期
+    def test_lockmember3(self):
+        SessionPool.objects.create(sessionId = "02", user = self.u2,
+                                   expireAt = dt.datetime.now(pytz.timezone(TIME_ZONE)) - dt.timedelta(days=2))
+        c = Client()
+        resp = c.put(
+            "/User/lock",
+            data={"SessionID": "02","UserName": "chusheng_4"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+
+    # 用户不存在
+    def test_lockmember4(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.put(
+            "/User/lock",
+            data={"SessionID": "2","UserName": "chusheng_444"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],1)
+
+    # 尝试锁定系统管理员
+    def test_lockmember5(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.put(
+            "/User/lock",
+            data={"SessionID": "2","UserName": "chusheng_2"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],1)
+
+    # 成功锁定
+    def test_lockmember6(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        self.assertEqual(User.objects.filter(name="chusheng_4").first().Is_Locked,False)
+        resp = c.put(
+            "/User/lock",
+            data={"SessionID": "2","UserName": "chusheng_4"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(User.objects.filter(name="chusheng_4").first().Is_Locked,True)
+        resp = c.put(
+            "/User/lock",
+            data={"SessionID": "2","UserName": "chusheng_4"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(User.objects.filter(name="chusheng_4").first().Is_Locked,False)
+
 # 系统管理员增加部门测试
     # 无权限  
     def test_adddepartment1(self):
