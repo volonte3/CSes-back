@@ -299,6 +299,193 @@ class UserTests(TestCase):
         )
         self.assertEqual(resp.json()["code"],2)
 
+# 系统管理员增加用户测试
+    # 无权限
+    def test_addmember1(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "3"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/User/add",
+            data={"SessionID": "3", "UserName": "chusheng_6", "Department":"110000000"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],2)
+
+    # sessionid不存在
+    def test_addmember2(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/User/add",
+            data={"SessionID": "20", "UserName": "chusheng_6", "Department":"110000000"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+
+    # sessionid过期
+    def test_addmember3(self):
+        SessionPool.objects.create(sessionId = "02", user = self.u2,
+                                   expireAt = dt.datetime.now(pytz.timezone(TIME_ZONE)) - dt.timedelta(days=2))
+        c = Client()
+        resp = c.post(
+            "/User/add",
+            data={"SessionID": "02", "UserName": "chusheng_6", "Department":"110000000"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+
+    # 用户名已存在
+    def test_addmember4(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/User/add",
+            data={"SessionID": "2", "UserName": "chusheng_1", "Department":"110000000"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],1)
+
+    # 部门路径无效
+    def test_addmember5(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/User/add",
+            data={"SessionID": "2", "UserName": "chusheng_6", "Department":"880000000"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],4)
+
+    # 部门不是叶子
+    def test_addmember6(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/User/add",
+            data={"SessionID": "2", "UserName": "chusheng_6", "Department":"100000000"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],4)
+
+    # 成功添加
+    def test_addmember7(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/User/add",
+            data={"SessionID": "2", "UserName": "chusheng_6", "Department":"110000000"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(len(list(User.objects.filter(department=self.d1_1).all())),4)
+
+# 系统管理员删除用户测试
+# 无权限
+    def test_removemember1(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "3"},
+            content_type="application/json",
+        )
+        resp = c.delete(
+            "/User/remove/3/chusheng_4",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],2)
+
+    # sessionid不存在
+    def test_removemember2(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.delete(
+            "/User/remove/20/chusheng_4",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+
+    # sessionid过期
+    def test_removemember3(self):
+        SessionPool.objects.create(sessionId = "02", user = self.u2,
+                                   expireAt = dt.datetime.now(pytz.timezone(TIME_ZONE)) - dt.timedelta(days=2))
+        c = Client()
+        resp = c.delete(
+            "/User/remove/02/chusheng_4",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+
+    # 用户不存在
+    def test_removemember4(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.delete(
+            "/User/remove/2/chusheng_66",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],1)
+
+    # 尝试删除系统管理员
+    def test_removemember5(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.delete(
+            "/User/remove/2/chusheng_2",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],1)
+
+    # 成功删除
+    def test_removemember6(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.delete(
+            "/User/remove/2/chusheng_4",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(len(list(User.objects.filter(department=self.d1_1).all())),2)
+
 # 系统管理员增加部门测试
     # 无权限  
     def test_adddepartment1(self):
