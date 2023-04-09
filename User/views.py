@@ -135,6 +135,84 @@ def get_all_member(req: Request, sessionId: str):
             return request_failed(2, "session id doesn't exist")
     else:
         return BAD_METHOD
+    
+
+def add_member(req: Request):
+    print("调用了add_member函数")
+    if req.method == "POST":
+        session_id = get_session_id(req)
+        sessionRecord = SessionPool.objects.filter(sessionId=session_id).first()
+        if sessionRecord:
+            if sessionRecord.expireAt < dt.datetime.now(pytz.timezone(TIME_ZONE)):
+                SessionPool.objects.filter(sessionId=session_id).delete()
+                return request_failed(3, "session id expire")
+            else:
+                user = sessionRecord.user
+                if user.system_administrator == 0:
+                    return request_failed(2, "no permissions")
+                else:
+                    e1 = user.entity
+                    tmp_body = req.body.decode("utf-8")
+                    try:
+                        body = json.loads(tmp_body)
+                    except BaseException as error:
+                        print(error, tmp_body)
+                    member_name = require(body, "UserName", "string",
+                                          err_msg="Missing or error type of UserName")
+                    department_path = require(body, "Department","string",
+                                              err_msg="Missing or error type of Department")
+                    member1 = User.objects.filter(name=member_name).first()
+                    if member1:
+                        return request_failed(1,"用户名已存在")
+                    d1 = Department.objects.filter(path=department_path,entity=e1).first()
+                    if not d1:
+                        return request_failed(4,"部门不存在")
+                    else:
+                        if len(parse_children(d1.children)) != 0:
+                            return request_failed(4,"不是叶子部门")
+                        else:
+                            User.objects.create(name=member_name,password=sha256(MD5("yiqunchusheng")),
+                                                entity=e1,department=d1,
+                                                super_administrator=0,system_administrator=0,asset_administrator=0,
+                                                function_string="1111100000000000000000")
+                            return request_success()
+        else:
+            return request_failed(3, "session id doesn't exist")
+    else:
+        return BAD_METHOD
+
+
+def remove_member(req:Request, sessionId:str, UserName:str):
+    print("调用了remove_member函数")
+    print(sessionId)
+    print(UserName)
+    if req.method == "DELETE":
+        sessionRecord = SessionPool.objects.filter(sessionId=sessionId).first()
+        if sessionRecord:
+            if sessionRecord.expireAt < dt.datetime.now(pytz.timezone(TIME_ZONE)):
+                SessionPool.objects.filter(sessionId=sessionId).delete()
+                return request_failed(3, "session id expire")
+            else:
+                user = sessionRecord.user
+                if user.system_administrator == 0:
+                    return request_failed(2, "no permissions")
+                else:
+                    e1 = user.entity
+                    member1 = User.objects.filter(name=UserName,entity=e1).first()
+                    if not member1:
+                        return request_failed(1,"用户不存在")
+                    elif member1.system_administrator == 1:
+                        return request_failed(1,"不能删除系统管理员")
+                    else:
+                        member1.delete()
+                        return request_success()
+        else:
+            return request_failed(3, "session id doesn't exist")
+    else:
+        return BAD_METHOD
+
+
+
 
 
 def add_department(req: Request):
@@ -161,11 +239,11 @@ def add_department(req: Request):
                                              err_msg="Missing or error type of DepartmentPath")
                     DepartmentName = require(body, "DepartmentName", "string",
                                              err_msg="Missing or error type of DepartmentName")
-                    d1 = Department.objects.filter(name=DepartmentName).first()
+                    d1 = Department.objects.filter(name=DepartmentName,entity=e1).first()
                     if d1:
                         return request_failed(1, "部门名已存在")
                     elif DepartmentPath == '000000000':
-                        root_num = len(Department.objects.filter(parent=None).all())
+                        root_num = len(Department.objects.filter(parent=None,entity=e1).all())
                         if root_num >= 9:
                             return request_failed(3, "部门数已达到上限")
                         else:
@@ -181,7 +259,7 @@ def add_department(req: Request):
                                 }
                             return request_success(return_data)
                     else:
-                        d2 = Department.objects.filter(path=DepartmentPath).first()
+                        d2 = Department.objects.filter(path=DepartmentPath,entity=e1).first()
                         if not d2:
                             return request_failed(2, "部门路径无效")
                         else:
@@ -201,8 +279,8 @@ def add_department(req: Request):
                                 tmp_list[index] = str((1 + child_num))
                                 new_departmentpath = ''.join(tmp_list)
                                 new_d = Department.objects.create(parent=d2, entity=e1, 
-                                                                name=DepartmentName,
-                                                                path=new_departmentpath)
+                                                                  name=DepartmentName,
+                                                                  path=new_departmentpath)
                                 return_data = {
                                     "department_path" : new_departmentpath
                                 }
@@ -224,7 +302,7 @@ def add_department(req: Request):
     
     
 def get_next_department(req:Request, sessionId:str, DepartmentPath:str):
-    print("调用了get_all_member函数")
+    print("调用了get_next_member函数")
     print(sessionId)
     print(DepartmentPath)
     if req.method == 'GET':
@@ -238,9 +316,10 @@ def get_next_department(req:Request, sessionId:str, DepartmentPath:str):
                 if user.system_administrator == 0:
                     return request_failed(2, "no permissions")
                 else:
+                    e1 = user.entity
                     if DepartmentPath == '000000000':
                         is_leaf = False
-                        root_list = list(Department.objects.filter(parent=None).all().order_by('path'))
+                        root_list = list(Department.objects.filter(parent=None,entity=e1).all().order_by('path'))
                         root_num = len(root_list)
                         return_data = {
                             "is_leaf": is_leaf,
@@ -256,7 +335,7 @@ def get_next_department(req:Request, sessionId:str, DepartmentPath:str):
                         }
                         return request_success(return_data)
                     else:
-                        d1 = Department.objects.filter(path=DepartmentPath).first()
+                        d1 = Department.objects.filter(path=DepartmentPath,entity=e1).first()
                         if not d1:
                             return request_failed(1, "部门不存在")
                         else:
@@ -276,7 +355,7 @@ def get_next_department(req:Request, sessionId:str, DepartmentPath:str):
                                 return request_success(return_data)
                             else:
                                 is_leaf = False
-                                child_list = list(Department.objects.filter(parent=d1).all().order_by('path'))
+                                child_list = list(Department.objects.filter(parent=d1,entity=e1).all().order_by('path'))
                                 return_data = {
                                     "is_leaf": is_leaf,
                                     "member": [],
