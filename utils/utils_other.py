@@ -35,3 +35,16 @@ def parse_children(children_string):
     else:
         children_list = children_string.split('$')
         return children_list[1:]  # 去除最前面的一个空格
+
+def delete_child(children_string, child:int):
+    # 从children_string中删除掉一个child
+    substr = '$' + str(child)
+    pos = children_string.find(substr)
+
+    if pos != -1:
+        new_string = children_string[:pos] + children_string[pos+len(substr):]
+    else:
+        new_string = children_string
+        print(f"{substr} not found in string")
+    
+    return new_string

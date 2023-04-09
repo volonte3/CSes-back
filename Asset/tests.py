@@ -384,7 +384,14 @@ class AssetTests(TestCase):
             content_type="application/json",
         )
 
+        resp3 = c.delete(
+            "/Asset/DeleteAssetClass/1/2",
+            content_type="application/json",
+        )
+
+
         self.assertEqual(resp2.json()["code"], 0)
+        self.assertEqual(resp3.json()["code"], 0)
 
 
 

@@ -90,10 +90,21 @@ def _delete_asset_class(user: User, data):
         return request_failed(5, "该节点为根节点，不能删除")
 
     # 之后递归删数据, 因为之后可能还需要检查同名, 所以要把数据真正地删掉
+    subtree_list = []
+    subtree_list = give_subtree_list_recursive(asset_class_id=data["NodeValue"], department_id=user.department.id, subtree_list=subtree_list)
+    debug_print("subtree_list", subtree_list)
+
+    # 修改父节点的children:
+    parent_node = AssetClass.objects.filter(parent = to_delete.parent).first()
+    new_children_string = delete_child(parent_node.children, data["NodeValue"])
+    parent_node.children = new_children_string
+    parent_node.save()
 
 
-
-
+    # 删除 subtree_list 中的资产分类
+    for sub_node in subtree_list:
+        AssetClass.objects.filter(id = sub_node).delete()
+    
     return request_success()
 
 
