@@ -77,6 +77,34 @@ def modify_asset_class(req: Request):
     return AssetWarpper(req=req, function=_modify_asset_class, authority_level=ONLY_ASSET_ADMIN, \
         data_require=["AssetClassName", "NodeValue", "NaturalClass"])
 
+def _delete_asset_class(user: User, data):
+    debug_print("NodeValue", data["NodeValue"])
+
+    # 检查该节点是否存在
+    to_delete = AssetClass.objects.filter(id = data["NodeValue"], department = user.department).first()
+    if(to_delete == None):
+        return request_failed(4, "该节点不存在")
+    
+    # 检查该节点是否为根节点
+    if (to_delete.property == 0):
+        return request_failed(5, "该节点为根节点，不能删除")
+
+    # 之后递归删数据, 因为之后可能还需要检查同名, 所以要把数据真正地删掉
+
+
+
+
+    return request_success()
+
+
+def delete_asset_class(req: Request, SessionID:str, NodeValue: int):
+    data_pass = {}
+    data_pass["session_id"] = SessionID
+    data_pass["NodeValue"] = NodeValue
+    return AssetWarpper(req=req, function=_delete_asset_class, authority_level=ONLY_ASSET_ADMIN, \
+        data_pass=data_pass)
+    
+
 def add_asset_class(req: Request):
 
     return AssetWarpper(req=req, function=_add_asset_class, authority_level=ONLY_ASSET_ADMIN, \

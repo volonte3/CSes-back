@@ -9,5 +9,5 @@ urlpatterns = [
     path('/info/<str:SessionID>', views.superuser_info),
     path('/AddAssetClass', views.add_asset_class),
     path('/ModifyAssetClass', views.modify_asset_class),
-
+    path('/DeleteAssetClass/<str:SessionID>/<int:NodeValue>', views.delete_asset_class)
 ]

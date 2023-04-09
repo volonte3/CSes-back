@@ -142,3 +142,29 @@ def give_subtree_recursive(asset_class_id, department_id):
     nodeData["children"] = children
 
     return nodeData
+
+def give_subtree_list_recursive(asset_class_id, department_id):
+    nodeData = {}
+
+    # 把这个asset_class的title与value填写到nodeData中, value直接写asset_class_id
+    asset_class = get_asset_class(asset_class_id)
+    assert asset_class.department.id == department_id, "department id is wrong!"
+
+    nodeData['title'] = asset_class.name
+    nodeData['value'] = asset_class_id
+
+    # 解析出children_list
+    children_list = parse_children(asset_class.children)
+
+    # 如果这个asset_class没有children, 直接返回nodeData
+    if len(children_list)==0:
+        return nodeData 
+
+    # 如果这个asset_class有children
+    children = []
+    for child_id in children_list:
+        children.append(give_subtree_recursive(child_id, department_id))
+
+    nodeData["children"] = children
+
+    return nodeData
