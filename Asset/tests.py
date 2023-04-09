@@ -377,6 +377,11 @@ class AssetTests(TestCase):
             content_type="application/json",
         )
 
+        root_node = AssetClass.objects.filter(id=1).first()
+        debug_print("root_node", root_node.children)
+        all_node = AssetClass.objects.all()
+        debug_print("all", len(all_node))
+
 
         # 资产管理员调用delete_asset_class函数
         resp2 = c.delete(
@@ -388,6 +393,12 @@ class AssetTests(TestCase):
             "/Asset/DeleteAssetClass/1/2",
             content_type="application/json",
         )
+
+        root_node = AssetClass.objects.filter(id=1).first()
+        debug_print("root_node", root_node.children)
+        all_node = AssetClass.objects.all()
+        debug_print("all", len(all_node))
+
 
 
         self.assertEqual(resp2.json()["code"], 0)

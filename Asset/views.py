@@ -95,7 +95,7 @@ def _delete_asset_class(user: User, data):
     debug_print("subtree_list", subtree_list)
 
     # 修改父节点的children:
-    parent_node = AssetClass.objects.filter(parent = to_delete.parent).first()
+    parent_node = AssetClass.objects.filter(id = to_delete.parent.id).first()
     new_children_string = delete_child(parent_node.children, data["NodeValue"])
     parent_node.children = new_children_string
     parent_node.save()
