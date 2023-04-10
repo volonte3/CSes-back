@@ -27,6 +27,7 @@ class Client(DefaultClient):
 class UserTests(TestCase):
     def setUp(self):
         self.raw_password = "yiqunchusheng"
+        self.test_password = "YIQUNCHUSHENG"
         self.e1 = Entity.objects.create(name = 'CS_Company1')
         self.d1 = Department.objects.create(name = 'CS_Department1', entity = self.e1, path = '100000000')
         self.d1_1 = Department.objects.create(name = 'CS_Department1_1', entity = self.e1, parent = self.d1, path = '110000000')
@@ -59,7 +60,7 @@ class UserTests(TestCase):
             function_string = "1111100000000000000000"
         )
         self.u5 = User.objects.create(
-            name="chusheng_5", password=sha256(self.raw_password),
+            name="chusheng_5", password=sha256(self.test_password),
             entity = self.e1,department= self.d1_1,
             super_administrator = 0,system_administrator = 0, asset_administrator = 0,
             function_string = "1111100000000000000000"
@@ -236,11 +237,11 @@ class UserTests(TestCase):
     
     # sessionid过期    
     def test_userinfo6(self):
-        SessionPool.objects.create(sessionId = "5", user = self.u5,
+        SessionPool.objects.create(sessionId = "04", user = self.u4,
                                    expireAt = dt.datetime.now(pytz.timezone(TIME_ZONE)) - dt.timedelta(days=2))
         c = Client()
         resp = c.get(
-            "/User/info/5",
+            "/User/info/04",
             content_type="application/json",
         )
         self.assertEqual(resp.json()["code"],2)
@@ -705,6 +706,122 @@ class UserTests(TestCase):
         self.assertEqual(resp2.json()["code"],0)
         self.assertEqual(User.objects.filter(name="chusheng_3").first().asset_administrator, 0)
         self.assertEqual(User.objects.filter(name="chusheng_3").first().function_string, "1111100000000000000000")
+
+# 系统管理员重置用户密码测试
+# 无权限
+    def test_remakepassword1(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "3"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/User/RemakePassword",
+            data={"SessionID": "3","UserName": "chusheng_5"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],2)
+
+    # sessionid不存在
+    def test_remakepassword2(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/User/RemakePassword",
+            data={"SessionID": "20","UserName": "chusheng_5"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+
+    # sessionid过期
+    def test_remakepassword3(self):
+        SessionPool.objects.create(sessionId = "02", user = self.u2,
+                                   expireAt = dt.datetime.now(pytz.timezone(TIME_ZONE)) - dt.timedelta(days=2))
+        c = Client()
+        resp = c.post(
+            "/User/RemakePassword",
+            data={"SessionID": "02","UserName": "chusheng_4"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+
+    # 用户不存在
+    def test_remakepassword4(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/User/RemakePassword",
+            data={"SessionID": "2","UserName": "chusheng_567"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],1)
+
+    # 尝试重置系统管理员的密码
+    def test_remakepassword5(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.post(
+            "/User/RemakePassword",
+            data={"SessionID": "2","UserName": "chusheng_2"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],1)
+
+    # 成功重置密码
+    def test_remakepassword6(self):
+        c = Client()
+        resp1 = c.post(
+            "/User/login",
+            data={"UserName": self.u5.name, "Password": self.test_password, "SessionID": "5"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp1.json()["code"],0)
+        resp2 = c.post(
+            "/User/logout",
+            data={"SessionID": "5"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp2.json()["code"],0)
+
+        resp3 = c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp3.json()["code"],0)
+        resp4 = c.post(
+            "/User/RemakePassword",
+            data={"SessionID": "2","UserName": "chusheng_5"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp4.json()["code"],0)
+        resp5 = c.post(
+            "/User/logout",
+            data={"SessionID": "2"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp5.json()["code"],0)
+
+        resp6 = c.post(
+            "/User/login",
+            data={"UserName": self.u5.name, "Password": MD5(self.raw_password), "SessionID": "5"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp6.json()["code"],0)
+        
 
 # 系统管理员增加部门测试
     # 无权限  
