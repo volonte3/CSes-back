@@ -480,12 +480,26 @@ class UserTests(TestCase):
             data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
             content_type="application/json",
         )
-        resp = c.delete(
+        c.post(
+            "/User/login",
+            data={"UserName": self.u4.name, "Password": self.raw_password, "SessionID": "4"},
+            content_type="application/json",
+        )
+        resp1 = c.delete(
             "/User/remove/2/chusheng_4",
             content_type="application/json",
         )
-        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(resp1.json()["code"],0)
         self.assertEqual(len(list(User.objects.filter(department=self.d1_1).all())),2)
+
+        resp2 = c.post(
+            "/User/logout",
+            data={"SessionID": "4"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp2.json()["code"], 1)
+        
+
 
 # 系统管理员锁定/解锁用户测试
 # 无权限
@@ -581,7 +595,7 @@ class UserTests(TestCase):
             data={"UserName": self.u4.name, "Password": self.raw_password, "SessionID": "4"},
             content_type="application/json",
         )
-        self.assertEqual(resp2.json()["code"],4)
+        self.assertEqual(resp2.json()["code"],1)
         resp3 = c.put(
             "/User/lock",
             data={"SessionID": "2","UserName": "chusheng_4"},
@@ -686,24 +700,35 @@ class UserTests(TestCase):
             data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
             content_type="application/json",
         )
-
-        self.assertEqual(User.objects.filter(name="chusheng_4").first().asset_administrator, 0)
+        # 用户权限不变时，改了但又好像没改
         resp1 = c.put(
+            "/User/ChangeAuthority",
+            data={"SessionID": "2","UserName": "chusheng_4","Authority": 3},
+            content_type="application/json",
+        )
+        self.assertEqual(resp1.json()["code"],0)
+        resp2 = c.put(
+            "/User/ChangeAuthority",
+            data={"SessionID": "2","UserName": "chusheng_3","Authority": 2},
+            content_type="application/json",
+        )
+        self.assertEqual(resp2.json()["code"],0)
+        # 不能同时拥有两个资产管理员
+        resp3 = c.put(
             "/User/ChangeAuthority",
             data={"SessionID": "2","UserName": "chusheng_4","Authority": 2},
             content_type="application/json",
         )
-        self.assertEqual(resp1.json()["code"],0)
-        self.assertEqual(User.objects.filter(name="chusheng_4").first().asset_administrator, 1)
-        self.assertEqual(User.objects.filter(name="chusheng_4").first().function_string, "0000011111111100000000")
-
+        self.assertEqual(resp3.json()["code"],4)
+        # 但是可以没有资产管理员
         self.assertEqual(User.objects.filter(name="chusheng_3").first().asset_administrator, 1)
-        resp2 = c.put(
+        resp4 = c.put(
             "/User/ChangeAuthority",
             data={"SessionID": "2","UserName": "chusheng_3","Authority": 3},
             content_type="application/json",
         )
-        self.assertEqual(resp2.json()["code"],0)
+        self.assertEqual(resp4.json()["code"],0)
+        self.assertEqual(resp4.json()["important_message"],"当前部门缺少资产管理员，请尽快添加")
         self.assertEqual(User.objects.filter(name="chusheng_3").first().asset_administrator, 0)
         self.assertEqual(User.objects.filter(name="chusheng_3").first().function_string, "1111100000000000000000")
 

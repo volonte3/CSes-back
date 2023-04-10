@@ -54,7 +54,7 @@ def login(req: Request):
             return request_failed(2, "用户名或密码错误")
         else:
             if user.Is_Locked:
-                return request_failed(4,"用户已被锁定")
+                return request_failed(1,"用户已被锁定")
             elif user.password == sha_hashed_password:
                 session_list = SessionPool.objects.filter(user=user).all()
                 if len(session_list) > 0:
@@ -284,19 +284,33 @@ def change_authority(req:Request):
                             return request_failed(1,"不能更改系统管理员的权限")
                         else:
                             if authority == 2:
-                                member.super_administrator = 0
-                                member.system_administrator = 0
-                                member.asset_administrator = 1
-                                member.function_string = "0000011111111100000000"
-                                member.save()
-                                return request_success()
+                                if member.asset_administrator == 1:
+                                    return request_success()
+                                else:
+                                    d1 = member.department
+                                    member2 = User.objects.filter(department=d1,asset_administrator=1).first()
+                                    if member2:
+                                        return request_failed(4,"不能同时存在两个资产管理员")
+                                    else:
+                                        member.super_administrator = 0
+                                        member.system_administrator = 0
+                                        member.asset_administrator = 1
+                                        member.function_string = "0000011111111100000000"
+                                        member.save()
+                                        return request_success()
                             elif authority == 3:
-                                member.super_administrator = 0
-                                member.system_administrator = 0
-                                member.asset_administrator = 0
-                                member.function_string = "1111100000000000000000"
-                                member.save()
-                                return request_success()
+                                if member.asset_administrator == 0:
+                                    return request_success()
+                                else:
+                                    member.super_administrator = 0
+                                    member.system_administrator = 0
+                                    member.asset_administrator = 0
+                                    member.function_string = "1111100000000000000000"
+                                    member.save()
+                                    return_data = {
+                                        "important_message": "当前部门缺少资产管理员，请尽快添加",
+                                    }
+                                    return request_success(return_data)
                             else:
                                 return request_failed(2,"无权更改为其他身份")
                             
