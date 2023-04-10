@@ -568,19 +568,25 @@ class UserTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(User.objects.filter(name="chusheng_4").first().Is_Locked,False)
-        resp = c.put(
+        resp1 = c.put(
             "/User/lock",
             data={"SessionID": "2","UserName": "chusheng_4"},
             content_type="application/json",
         )
-        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(resp1.json()["code"],0)
         self.assertEqual(User.objects.filter(name="chusheng_4").first().Is_Locked,True)
-        resp = c.put(
+        resp2 = c.post(
+            "/User/login",
+            data={"UserName": self.u4.name, "Password": self.raw_password, "SessionID": "4"},
+            content_type="application/json",
+        )
+        self.assertEqual(resp2.json()["code"],4)
+        resp3 = c.put(
             "/User/lock",
             data={"SessionID": "2","UserName": "chusheng_4"},
             content_type="application/json",
         )
-        self.assertEqual(resp.json()["code"],0)
+        self.assertEqual(resp3.json()["code"],0)
         self.assertEqual(User.objects.filter(name="chusheng_4").first().Is_Locked,False)
 
 # 系统管理员增加部门测试

@@ -53,7 +53,9 @@ def login(req: Request):
         if not user:
             return request_failed(2, "用户名或密码错误")
         else:
-            if user.password == sha_hashed_password:
+            if user.Is_Locked:
+                return request_failed(4,"用户已被锁定")
+            elif user.password == sha_hashed_password:
                 session_list = SessionPool.objects.filter(user=user).all()
                 if len(session_list) > 0:
                     for session in session_list:
