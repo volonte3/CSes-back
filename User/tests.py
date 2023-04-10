@@ -589,6 +589,123 @@ class UserTests(TestCase):
         self.assertEqual(resp3.json()["code"],0)
         self.assertEqual(User.objects.filter(name="chusheng_4").first().Is_Locked,False)
 
+# 系统管理员更改用户权限测试
+# 无权限
+    def test_changeauthority1(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u3.name, "Password": self.raw_password, "SessionID": "3"},
+            content_type="application/json",
+        )
+        resp = c.put(
+            "/User/ChangeAuthority",
+            data={"SessionID": "3","UserName": "chusheng_4","Authority": 2},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],2)
+
+    # sessionid不存在
+    def test_changeauthority2(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.put(
+            "/User/ChangeAuthority",
+            data={"SessionID": "20","UserName": "chusheng_4","Authority": 2},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+
+    # sessionid过期
+    def test_changeauthority3(self):
+        SessionPool.objects.create(sessionId = "02", user = self.u2,
+                                   expireAt = dt.datetime.now(pytz.timezone(TIME_ZONE)) - dt.timedelta(days=2))
+        c = Client()
+        resp = c.put(
+            "/User/ChangeAuthority",
+            data={"SessionID": "02","UserName": "chusheng_4","Authority": 2},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],3)
+
+    # 用户不存在
+    def test_changeauthority4(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.put(
+            "/User/ChangeAuthority",
+            data={"SessionID": "2","UserName": "chusheng_66666","Authority": 2},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],1)
+
+    # 尝试更改系统管理员的权限
+    def test_changeauthority5(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.put(
+            "/User/ChangeAuthority",
+            data={"SessionID": "2","UserName": "chusheng_2","Authority": 2},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],1)
+
+    # 尝试将权限更改为超级/系统管理员
+    def test_changeauthority6(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+        resp = c.put(
+            "/User/ChangeAuthority",
+            data={"SessionID": "2","UserName": "chusheng_4","Authority": 0},
+            content_type="application/json",
+        )
+        self.assertEqual(resp.json()["code"],2)
+
+    # 成功更改
+    def test_changeauthority7(self):
+        c = Client()
+        c.post(
+            "/User/login",
+            data={"UserName": self.u2.name, "Password": self.raw_password, "SessionID": "2"},
+            content_type="application/json",
+        )
+
+        self.assertEqual(User.objects.filter(name="chusheng_4").first().asset_administrator, 0)
+        resp1 = c.put(
+            "/User/ChangeAuthority",
+            data={"SessionID": "2","UserName": "chusheng_4","Authority": 2},
+            content_type="application/json",
+        )
+        self.assertEqual(resp1.json()["code"],0)
+        self.assertEqual(User.objects.filter(name="chusheng_4").first().asset_administrator, 1)
+        self.assertEqual(User.objects.filter(name="chusheng_4").first().function_string, "0000011111111100000000")
+
+        self.assertEqual(User.objects.filter(name="chusheng_3").first().asset_administrator, 1)
+        resp2 = c.put(
+            "/User/ChangeAuthority",
+            data={"SessionID": "2","UserName": "chusheng_3","Authority": 3},
+            content_type="application/json",
+        )
+        self.assertEqual(resp2.json()["code"],0)
+        self.assertEqual(User.objects.filter(name="chusheng_3").first().asset_administrator, 0)
+        self.assertEqual(User.objects.filter(name="chusheng_3").first().function_string, "1111100000000000000000")
+
 # 系统管理员增加部门测试
     # 无权限  
     def test_adddepartment1(self):

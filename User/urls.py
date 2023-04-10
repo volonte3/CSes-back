@@ -14,6 +14,7 @@ urlpatterns = [
     path('/add',views.add_member),
     path('/remove/<str:sessionId>/<str:UserName>',views.remove_member),
     path('/lock',views.lock_member),
+    path('/ChangeAuthority',views.change_authority),
 
     path('/department/add',views.add_department),
     path('/department/<str:sessionId>/<str:DepartmentPath>',views.get_next_department),

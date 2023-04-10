@@ -252,6 +252,60 @@ def lock_member(req:Request):
         return BAD_METHOD
 
 
+def change_authority(req:Request):
+    print("调用了change_authority函数")
+    if req.method == "PUT":
+        session_id = get_session_id(req)
+        sessionRecord = SessionPool.objects.filter(sessionId=session_id).first()
+        if sessionRecord:
+            if sessionRecord.expireAt < dt.datetime.now(pytz.timezone(TIME_ZONE)):
+                SessionPool.objects.filter(sessionId=session_id).delete()
+                return request_failed(3, "session id expire")
+            else:
+                user = sessionRecord.user
+                if user.system_administrator == 0:
+                    return request_failed(2, "no permissions")
+                else:
+                    e1 = user.entity
+                    tmp_body = req.body.decode("utf-8")
+                    try:
+                        body = json.loads(tmp_body)
+                    except BaseException as error:
+                        print(error, tmp_body)
+                    member_name = require(body, "UserName", "string",
+                                          err_msg="Missing or error type of UserName")
+                    authority = require(body,"Authority","int",
+                                        err_msg="Missing or error type of Authority")
+                    member = User.objects.filter(name=member_name,entity=e1).first()
+                    if not member:
+                        return request_failed(1,"用户不存在")
+                    else:
+                        if member.system_administrator == 1:
+                            return request_failed(1,"不能更改系统管理员的权限")
+                        else:
+                            if authority == 2:
+                                member.super_administrator = 0
+                                member.system_administrator = 0
+                                member.asset_administrator = 1
+                                member.function_string = "0000011111111100000000"
+                                member.save()
+                                return request_success()
+                            elif authority == 3:
+                                member.super_administrator = 0
+                                member.system_administrator = 0
+                                member.asset_administrator = 0
+                                member.function_string = "1111100000000000000000"
+                                member.save()
+                                return request_success()
+                            else:
+                                return request_failed(2,"无权更改为其他身份")
+                            
+        else:
+            return request_failed(3, "session id doesn't exist")
+    else:
+        return BAD_METHOD
+
+
 def add_department(req: Request):
     print("调用了add_department函数")
     if req.method == "POST":
